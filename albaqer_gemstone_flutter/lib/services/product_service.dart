@@ -4,8 +4,9 @@ import 'package:albaqer_gemstone_flutter/models/product.dart';
 
 /// Service class for handling all product-related API calls to the backend
 class ProductService {
-  // Your backend URL - change this to your actual backend address
-  final String baseUrl = 'http://localhost:3000';
+  // For Android Emulator: use 10.0.2.2 (maps to host machine's localhost)
+  // For physical device/iOS simulator: use your computer's IP address
+  final String baseUrl = 'http://10.0.2.2:3000/api';
 
   // ========== CREATE ==========
   /// Create a new product on the backend
@@ -38,6 +39,15 @@ class ProductService {
           updatedAt: data['updated_at'] != null
               ? DateTime.parse(data['updated_at'])
               : null,
+          metalType: data['metal_type'],
+          metalColor: data['metal_color'],
+          metalPurity: data['metal_purity'],
+          metalWeightGrams: data['metal_weight_grams']?.toDouble(),
+          stoneType: data['stone_type'],
+          stoneColor: data['stone_color'],
+          stoneCarat: data['stone_carat']?.toDouble(),
+          stoneCut: data['stone_cut'],
+          stoneClarity: data['stone_clarity'],
         );
       } else {
         print('Failed to create product: ${response.statusCode}');
@@ -54,11 +64,22 @@ class ProductService {
   /// Returns a list of products, or empty list if failed
   Future<List<Product>> fetchAllProducts() async {
     try {
-      final response = await http.get(Uri.parse('$baseUrl/products'));
+      print('📡 Fetching products from: $baseUrl/products');
+
+      final response = await http
+          .get(Uri.parse('$baseUrl/products'))
+          .timeout(Duration(seconds: 10));
+
+      print('📥 Response status: ${response.statusCode}');
+      print('📦 Response body length: ${response.body.length}');
 
       if (response.statusCode == 200) {
-        // Success - parse the JSON array
-        List<dynamic> data = jsonDecode(response.body);
+        // Success - parse the JSON response with wrapped data
+        final jsonResponse = jsonDecode(response.body);
+        print('✅ JSON decoded successfully');
+        List<dynamic> data = jsonResponse['data'];
+        print('📊 Found ${data.length} products');
+
         return data.map((json) {
           return Product(
             id: json['id'],
@@ -77,6 +98,15 @@ class ProductService {
             updatedAt: json['updated_at'] != null
                 ? DateTime.parse(json['updated_at'])
                 : null,
+            metalType: json['metal_type'],
+            metalColor: json['metal_color'],
+            metalPurity: json['metal_purity'],
+            metalWeightGrams: json['metal_weight_grams']?.toDouble(),
+            stoneType: json['stone_type'],
+            stoneColor: json['stone_color'],
+            stoneCarat: json['stone_carat']?.toDouble(),
+            stoneCut: json['stone_cut'],
+            stoneClarity: json['stone_clarity'],
           );
         }).toList();
       } else {
@@ -115,6 +145,15 @@ class ProductService {
           updatedAt: json['updated_at'] != null
               ? DateTime.parse(json['updated_at'])
               : null,
+          metalType: json['metal_type'],
+          metalColor: json['metal_color'],
+          metalPurity: json['metal_purity'],
+          metalWeightGrams: json['metal_weight_grams']?.toDouble(),
+          stoneType: json['stone_type'],
+          stoneColor: json['stone_color'],
+          stoneCarat: json['stone_carat']?.toDouble(),
+          stoneCut: json['stone_cut'],
+          stoneClarity: json['stone_clarity'],
         );
       } else if (response.statusCode == 404) {
         print('Product not found');
@@ -159,6 +198,15 @@ class ProductService {
           updatedAt: json['updated_at'] != null
               ? DateTime.parse(json['updated_at'])
               : null,
+          metalType: json['metal_type'],
+          metalColor: json['metal_color'],
+          metalPurity: json['metal_purity'],
+          metalWeightGrams: json['metal_weight_grams']?.toDouble(),
+          stoneType: json['stone_type'],
+          stoneColor: json['stone_color'],
+          stoneCarat: json['stone_carat']?.toDouble(),
+          stoneCut: json['stone_cut'],
+          stoneClarity: json['stone_clarity'],
         );
       } else if (response.statusCode == 404) {
         print('Product not found');
@@ -195,6 +243,101 @@ class ProductService {
     } catch (e) {
       print('Error deleting product: $e');
       return false;
+    }
+  }
+
+  // ========== GET CATEGORIES ==========
+  /// Fetch all unique product categories from the backend
+  /// Returns a list of category names, or empty list if failed
+  Future<List<String>> fetchCategories() async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/products/categories'),
+      );
+
+      if (response.statusCode == 200) {
+        final jsonResponse = jsonDecode(response.body);
+        List<dynamic> data = jsonResponse['data'];
+        return data.map((category) => category.toString()).toList();
+      } else {
+        print('Failed to fetch categories: ${response.statusCode}');
+        return [];
+      }
+    } catch (e) {
+      print('Error fetching categories: $e');
+      return [];
+    }
+  }
+
+  // ========== SEARCH PRODUCTS ==========
+  /// Search products by query, type, price range
+  /// Returns a list of matching products
+  Future<List<Product>> searchProducts(
+    String query, {
+    String? type,
+    double? minPrice,
+    double? maxPrice,
+  }) async {
+    try {
+      // Build query parameters
+      Map<String, String> queryParams = {};
+      if (query.isNotEmpty) {
+        queryParams['query'] = query;
+      }
+      if (type != null) {
+        queryParams['type'] = type;
+      }
+      if (minPrice != null) {
+        queryParams['minPrice'] = minPrice.toString();
+      }
+      if (maxPrice != null) {
+        queryParams['maxPrice'] = maxPrice.toString();
+      }
+
+      final uri = Uri.parse(
+        '$baseUrl/products/search',
+      ).replace(queryParameters: queryParams);
+      final response = await http.get(uri);
+
+      if (response.statusCode == 200) {
+        final jsonResponse = jsonDecode(response.body);
+        List<dynamic> data = jsonResponse['data'];
+        return data.map((json) {
+          return Product(
+            id: json['id'],
+            name: json['name'],
+            type: json['type'],
+            description: json['description'],
+            basePrice: json['base_price'].toDouble(),
+            rating: json['rating']?.toDouble() ?? 0.0,
+            totalReviews: json['total_reviews'] ?? 0,
+            quantityInStock: json['quantity_in_stock'],
+            imageUrl: json['image_url'],
+            isAvailable: json['is_available'] ?? true,
+            createdAt: json['created_at'] != null
+                ? DateTime.parse(json['created_at'])
+                : null,
+            updatedAt: json['updated_at'] != null
+                ? DateTime.parse(json['updated_at'])
+                : null,
+            metalType: json['metal_type'],
+            metalColor: json['metal_color'],
+            metalPurity: json['metal_purity'],
+            metalWeightGrams: json['metal_weight_grams']?.toDouble(),
+            stoneType: json['stone_type'],
+            stoneColor: json['stone_color'],
+            stoneCarat: json['stone_carat']?.toDouble(),
+            stoneCut: json['stone_cut'],
+            stoneClarity: json['stone_clarity'],
+          );
+        }).toList();
+      } else {
+        print('Failed to search products: ${response.statusCode}');
+        return [];
+      }
+    } catch (e) {
+      print('Error searching products: $e');
+      return [];
     }
   }
 }

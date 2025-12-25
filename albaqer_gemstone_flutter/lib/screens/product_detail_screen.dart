@@ -1,0 +1,430 @@
+import 'package:flutter/material.dart';
+import '../models/product.dart';
+
+class ProductDetailScreen extends StatefulWidget {
+  final Product product;
+
+  const ProductDetailScreen({super.key, required this.product});
+
+  @override
+  State<ProductDetailScreen> createState() => _ProductDetailScreenState();
+}
+
+class _ProductDetailScreenState extends State<ProductDetailScreen> {
+  int quantity = 1;
+
+  void _incrementQuantity() {
+    if (quantity < widget.product.quantityInStock) {
+      setState(() {
+        quantity++;
+      });
+    }
+  }
+
+  void _decrementQuantity() {
+    if (quantity > 1) {
+      setState(() {
+        quantity--;
+      });
+    }
+  }
+
+  void _addToCart() {
+    // TODO: Implement cart functionality
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Added ${widget.product.name} to cart'),
+        duration: Duration(seconds: 2),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Product Details'),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.share),
+            onPressed: () {
+              // TODO: Implement share functionality
+            },
+          ),
+        ],
+      ),
+      body: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Product Image
+            Container(
+              height: 300,
+              width: double.infinity,
+              color: Colors.grey[200],
+              child:
+                  widget.product.imageUrl != null &&
+                      widget.product.imageUrl!.isNotEmpty
+                  ? Image.network(
+                      widget.product.imageUrl!,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Center(
+                          child: Icon(
+                            Icons.diamond,
+                            size: 100,
+                            color: Colors.grey,
+                          ),
+                        );
+                      },
+                    )
+                  : Center(
+                      child: Icon(Icons.diamond, size: 100, color: Colors.grey),
+                    ),
+            ),
+
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Product Name
+                  Text(
+                    widget.product.name,
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(height: 8),
+
+                  // Type/Category
+                  if (widget.product.type != null)
+                    Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.blue[100] ?? Colors.blue.shade100,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        widget.product.type.toUpperCase(),
+                        style: TextStyle(
+                          color: Colors.blue[900] ?? Colors.blue.shade900,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                  SizedBox(height: 16),
+
+                  // Rating and Reviews
+                  Row(
+                    children: [
+                      Icon(Icons.star, color: Colors.amber, size: 24),
+                      SizedBox(width: 4),
+                      Text(
+                        widget.product.rating.toStringAsFixed(1),
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(width: 8),
+                      Text(
+                        '(${widget.product.totalReviews} reviews)',
+                        style: TextStyle(fontSize: 14, color: Colors.grey),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 16),
+
+                  // Price
+                  Text(
+                    '\$${widget.product.basePrice.toStringAsFixed(2)}',
+                    style: TextStyle(
+                      fontSize: 32,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.green[700],
+                    ),
+                  ),
+                  SizedBox(height: 8),
+
+                  // Stock Status
+                  Row(
+                    children: [
+                      Icon(
+                        widget.product.quantityInStock > 0
+                            ? Icons.check_circle
+                            : Icons.cancel,
+                        color: widget.product.quantityInStock > 0
+                            ? Colors.green
+                            : Colors.red,
+                        size: 20,
+                      ),
+                      SizedBox(width: 8),
+                      Text(
+                        widget.product.quantityInStock > 0
+                            ? 'In Stock (${widget.product.quantityInStock} available)'
+                            : 'Out of Stock',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: widget.product.quantityInStock > 0
+                              ? Colors.green[700]
+                              : Colors.red[700],
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 24),
+
+                  // Divider
+                  Divider(),
+                  SizedBox(height: 16),
+
+                  // Description
+                  Text(
+                    'Description',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(height: 8),
+                  Text(
+                    widget.product.description != null &&
+                            widget.product.description!.isNotEmpty
+                        ? widget.product.description!
+                        : 'No description available',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.grey[800],
+                      height: 1.5,
+                    ),
+                  ),
+                  SizedBox(height: 24),
+
+                  // Divider
+                  Divider(),
+                  SizedBox(height: 16),
+
+                  // Specifications Section
+                  if (_hasSpecifications())
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Specifications',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        SizedBox(height: 12),
+
+                        // Metal Specifications
+                        if (widget.product.metalType != null ||
+                            widget.product.metalColor != null ||
+                            widget.product.metalPurity != null ||
+                            widget.product.metalWeightGrams != null)
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Metal Details',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.blue[800],
+                                ),
+                              ),
+                              SizedBox(height: 8),
+                              if (widget.product.metalType != null)
+                                _buildSpecRow(
+                                  'Type',
+                                  widget.product.metalType!,
+                                ),
+                              if (widget.product.metalColor != null)
+                                _buildSpecRow(
+                                  'Color',
+                                  widget.product.metalColor!,
+                                ),
+                              if (widget.product.metalPurity != null)
+                                _buildSpecRow(
+                                  'Purity',
+                                  widget.product.metalPurity!,
+                                ),
+                              if (widget.product.metalWeightGrams != null)
+                                _buildSpecRow(
+                                  'Weight',
+                                  '${widget.product.metalWeightGrams!.toStringAsFixed(2)}g',
+                                ),
+                              SizedBox(height: 12),
+                            ],
+                          ),
+
+                        // Stone Specifications
+                        if (widget.product.stoneType != null ||
+                            widget.product.stoneColor != null ||
+                            widget.product.stoneCarat != null ||
+                            widget.product.stoneCut != null ||
+                            widget.product.stoneClarity != null)
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Gemstone Details',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.purple[800],
+                                ),
+                              ),
+                              SizedBox(height: 8),
+                              if (widget.product.stoneType != null)
+                                _buildSpecRow(
+                                  'Stone',
+                                  widget.product.stoneType!,
+                                ),
+                              if (widget.product.stoneColor != null)
+                                _buildSpecRow(
+                                  'Color',
+                                  widget.product.stoneColor!,
+                                ),
+                              if (widget.product.stoneCarat != null)
+                                _buildSpecRow(
+                                  'Carat',
+                                  '${widget.product.stoneCarat!.toStringAsFixed(2)} ct',
+                                ),
+                              if (widget.product.stoneCut != null)
+                                _buildSpecRow('Cut', widget.product.stoneCut!),
+                              if (widget.product.stoneClarity != null)
+                                _buildSpecRow(
+                                  'Clarity',
+                                  widget.product.stoneClarity!,
+                                ),
+                            ],
+                          ),
+                        SizedBox(height: 24),
+                        Divider(),
+                        SizedBox(height: 16),
+                      ],
+                    ),
+
+                  // Quantity Selector
+                  Text(
+                    'Quantity',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(height: 12),
+                  Row(
+                    children: [
+                      IconButton(
+                        onPressed: _decrementQuantity,
+                        icon: Icon(Icons.remove_circle_outline),
+                        iconSize: 32,
+                        color: Colors.blue,
+                      ),
+                      SizedBox(width: 16),
+                      Text(
+                        quantity.toString(),
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(width: 16),
+                      IconButton(
+                        onPressed: _incrementQuantity,
+                        icon: Icon(Icons.add_circle_outline),
+                        iconSize: 32,
+                        color: Colors.blue,
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 24),
+
+                  // Created/Updated Dates (optional info)
+                  if (widget.product.createdAt != null)
+                    Text(
+                      'Listed on: ${widget.product.createdAt!.day}/${widget.product.createdAt!.month}/${widget.product.createdAt!.year}',
+                      style: TextStyle(fontSize: 12, color: Colors.grey),
+                    ),
+                  SizedBox(height: 80), // Space for bottom button
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+      bottomNavigationBar: Container(
+        padding: EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black12,
+              blurRadius: 8,
+              offset: Offset(0, -2),
+            ),
+          ],
+        ),
+        child: SafeArea(
+          child: ElevatedButton(
+            onPressed: widget.product.quantityInStock > 0 ? _addToCart : null,
+            style: ElevatedButton.styleFrom(
+              padding: EdgeInsets.symmetric(vertical: 16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            child: Text(
+              widget.product.quantityInStock > 0
+                  ? 'Add to Cart'
+                  : 'Out of Stock',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Helper method to check if product has any specifications
+  bool _hasSpecifications() {
+    return widget.product.metalType != null ||
+        widget.product.metalColor != null ||
+        widget.product.metalPurity != null ||
+        widget.product.metalWeightGrams != null ||
+        widget.product.stoneType != null ||
+        widget.product.stoneColor != null ||
+        widget.product.stoneCarat != null ||
+        widget.product.stoneCut != null ||
+        widget.product.stoneClarity != null;
+  }
+
+  // Helper method to build specification rows
+  Widget _buildSpecRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 100,
+            child: Text(
+              label,
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey[600],
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

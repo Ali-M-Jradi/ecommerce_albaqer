@@ -12,6 +12,19 @@ class Product {
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
+  // Metal specifications
+  final String? metalType;
+  final String? metalColor;
+  final String? metalPurity;
+  final double? metalWeightGrams;
+
+  // Stone specifications
+  final String? stoneType;
+  final String? stoneColor;
+  final double? stoneCarat;
+  final String? stoneCut;
+  final String? stoneClarity;
+
   Product({
     this.id,
     required this.name,
@@ -25,6 +38,15 @@ class Product {
     this.isAvailable = true,
     this.createdAt,
     this.updatedAt,
+    this.metalType,
+    this.metalColor,
+    this.metalPurity,
+    this.metalWeightGrams,
+    this.stoneType,
+    this.stoneColor,
+    this.stoneCarat,
+    this.stoneCut,
+    this.stoneClarity,
   });
 
   // Convert Product to Map for database insertion
@@ -42,6 +64,15 @@ class Product {
       'is_available': isAvailable ? 1 : 0,
       'created_at': createdAt?.toIso8601String(),
       'updated_at': updatedAt?.toIso8601String(),
+      'metal_type': metalType,
+      'metal_color': metalColor,
+      'metal_purity': metalPurity,
+      'metal_weight_grams': metalWeightGrams,
+      'stone_type': stoneType,
+      'stone_color': stoneColor,
+      'stone_carat': stoneCarat,
+      'stone_cut': stoneCut,
+      'stone_clarity': stoneClarity,
     };
   }
 }

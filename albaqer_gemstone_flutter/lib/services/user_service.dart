@@ -4,7 +4,8 @@ import 'package:albaqer_gemstone_flutter/models/user.dart';
 
 /// Service class for handling all user-related API calls to the backend
 class UserService {
-  final String baseUrl = 'http://localhost:3000';
+  // For Android Emulator: use 10.0.2.2 (maps to host machine's localhost)
+  final String baseUrl = 'http://10.0.2.2:3000/api';
 
   // ========== CREATE (Register) ==========
   /// Register a new user on the backend
@@ -47,10 +48,11 @@ class UserService {
   /// Fetch all users from the backend
   Future<List<User>> fetchAllUsers() async {
     try {
-      final response = await http.get(Uri.parse('$baseUrl/users'));
+      final response = await http.get(Uri.parse('$baseUrl/users/all'));
 
       if (response.statusCode == 200) {
-        List<dynamic> data = jsonDecode(response.body);
+        final jsonResponse = jsonDecode(response.body);
+        List<dynamic> data = jsonResponse['data'];
         return data.map((json) {
           return User(
             id: json['id'],

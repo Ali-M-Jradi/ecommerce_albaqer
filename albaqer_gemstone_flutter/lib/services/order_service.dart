@@ -4,7 +4,8 @@ import 'package:albaqer_gemstone_flutter/models/order.dart';
 
 /// Service class for handling all order-related API calls to the backend
 class OrderService {
-  final String baseUrl = 'http://localhost:3000';
+  // For Android Emulator: use 10.0.2.2 (maps to host machine's localhost)
+  final String baseUrl = 'http://10.0.2.2:3000/api';
 
   // ========== CREATE ==========
   /// Create a new order on the backend
@@ -55,7 +56,8 @@ class OrderService {
       final response = await http.get(Uri.parse('$baseUrl/orders'));
 
       if (response.statusCode == 200) {
-        List<dynamic> data = jsonDecode(response.body);
+        final jsonResponse = jsonDecode(response.body);
+        List<dynamic> data = jsonResponse['data'];
         return data.map((json) {
           return Order(
             id: json['id'],

@@ -21,7 +21,7 @@ class GemstoneDatabase {
 
         // Products Table
         await db.execute(
-          'CREATE TABLE products(id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, type TEXT NOT NULL, description TEXT, base_price REAL NOT NULL, rating REAL DEFAULT 0, total_reviews INTEGER DEFAULT 0, quantity_in_stock INTEGER NOT NULL DEFAULT 0, image_url TEXT, is_available INTEGER DEFAULT 1, created_at TEXT, updated_at TEXT)',
+          'CREATE TABLE products(id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, type TEXT NOT NULL, description TEXT, base_price REAL NOT NULL, rating REAL DEFAULT 0, total_reviews INTEGER DEFAULT 0, quantity_in_stock INTEGER NOT NULL DEFAULT 0, image_url TEXT, is_available INTEGER DEFAULT 1, created_at TEXT, updated_at TEXT, metal_type TEXT, metal_color TEXT, metal_purity TEXT, metal_weight_grams REAL, stone_type TEXT, stone_color TEXT, stone_carat REAL, stone_cut TEXT, stone_clarity TEXT)',
         );
 
         // Stones Table
@@ -69,8 +69,26 @@ class GemstoneDatabase {
           'CREATE TABLE reviews(id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL, product_id INTEGER NOT NULL, order_id INTEGER, rating INTEGER NOT NULL, title TEXT, comment TEXT, is_verified_purchase INTEGER DEFAULT 0, helpful_count INTEGER DEFAULT 0, created_at TEXT, updated_at TEXT)',
         );
       },
+      onUpgrade: (db, oldVersion, newVersion) async {
+        if (oldVersion < 2) {
+          // Add new columns for metal and stone specifications
+          await db.execute('ALTER TABLE products ADD COLUMN metal_type TEXT');
+          await db.execute('ALTER TABLE products ADD COLUMN metal_color TEXT');
+          await db.execute('ALTER TABLE products ADD COLUMN metal_purity TEXT');
+          await db.execute(
+            'ALTER TABLE products ADD COLUMN metal_weight_grams REAL',
+          );
+          await db.execute('ALTER TABLE products ADD COLUMN stone_type TEXT');
+          await db.execute('ALTER TABLE products ADD COLUMN stone_color TEXT');
+          await db.execute('ALTER TABLE products ADD COLUMN stone_carat REAL');
+          await db.execute('ALTER TABLE products ADD COLUMN stone_cut TEXT');
+          await db.execute(
+            'ALTER TABLE products ADD COLUMN stone_clarity TEXT',
+          );
+        }
+      },
       // increment version number only when the database scheme changes
-      version: 1,
+      version: 2,
     );
     return db;
   }
