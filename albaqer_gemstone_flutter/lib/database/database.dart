@@ -68,6 +68,21 @@ class GemstoneDatabase {
         await db.execute(
           'CREATE TABLE reviews(id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL, product_id INTEGER NOT NULL, order_id INTEGER, rating INTEGER NOT NULL, title TEXT, comment TEXT, is_verified_purchase INTEGER DEFAULT 0, helpful_count INTEGER DEFAULT 0, created_at TEXT, updated_at TEXT)',
         );
+
+        // Categories Table
+        await db.execute(
+          'CREATE TABLE categories(id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, description TEXT, parent_id INTEGER)',
+        );
+
+        // Product Categories Table (Many-to-Many)
+        await db.execute(
+          'CREATE TABLE product_categories(product_id INTEGER NOT NULL, category_id INTEGER NOT NULL, PRIMARY KEY(product_id, category_id))',
+        );
+
+        // Payments Table
+        await db.execute(
+          'CREATE TABLE payments(id INTEGER PRIMARY KEY AUTOINCREMENT, order_id INTEGER NOT NULL, payment_method TEXT NOT NULL, transaction_id TEXT, amount REAL NOT NULL, currency TEXT DEFAULT "USD", status TEXT DEFAULT "pending", payment_gateway TEXT, card_last_four TEXT, created_at TEXT)',
+        );
       },
       onUpgrade: (db, oldVersion, newVersion) async {
         if (oldVersion < 2) {
@@ -86,9 +101,21 @@ class GemstoneDatabase {
             'ALTER TABLE products ADD COLUMN stone_clarity TEXT',
           );
         }
+        if (oldVersion < 3) {
+          // Add new tables to match backend schema
+          await db.execute(
+            'CREATE TABLE IF NOT EXISTS categories(id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, description TEXT, parent_id INTEGER)',
+          );
+          await db.execute(
+            'CREATE TABLE IF NOT EXISTS product_categories(product_id INTEGER NOT NULL, category_id INTEGER NOT NULL, PRIMARY KEY(product_id, category_id))',
+          );
+          await db.execute(
+            'CREATE TABLE IF NOT EXISTS payments(id INTEGER PRIMARY KEY AUTOINCREMENT, order_id INTEGER NOT NULL, payment_method TEXT NOT NULL, transaction_id TEXT, amount REAL NOT NULL, currency TEXT DEFAULT "USD", status TEXT DEFAULT "pending", payment_gateway TEXT, card_last_four TEXT, created_at TEXT)',
+          );
+        }
       },
       // increment version number only when the database scheme changes
-      version: 2,
+      version: 3,
     );
     return db;
   }

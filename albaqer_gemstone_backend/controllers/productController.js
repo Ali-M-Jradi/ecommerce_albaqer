@@ -105,12 +105,26 @@ const deleteProduct = async (req, res) => {
     });
 };
 
+// @desc    Get all unique product categories
+// @route   GET /api/products/categories
+// @access  Public
+const getProductCategories = async (req, res) => {
+    const result = await pool.query(
+        'SELECT DISTINCT type FROM products WHERE type IS NOT NULL ORDER BY type'
+    );
+
+    res.json({
+        success: true,
+        data: result.rows.map(row => row.type)
+    });
+};
+
 // @desc    Search products
 // @route   GET /api/products/search
 // @access  Public
 const searchProducts = async (req, res) => {
     const { query, type, minPrice, maxPrice } = req.query;
-    
+
     let sqlQuery = 'SELECT * FROM products WHERE is_available = true';
     const params = [];
     let paramCount = 1;
@@ -156,5 +170,6 @@ module.exports = {
     createProduct,
     updateProduct,
     deleteProduct,
-    searchProducts
+    searchProducts,
+    getProductCategories
 };

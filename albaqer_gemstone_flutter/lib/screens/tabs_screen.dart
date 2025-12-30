@@ -22,7 +22,7 @@ class _TabsScreenState extends State<TabsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: selectedIndex == 0
+      appBar: selectedIndex == 1
           ? null
           : AppBar(
               animateColor: true,
@@ -50,23 +50,23 @@ class _TabsScreenState extends State<TabsScreen> {
                 preferredSize: Size(double.infinity, 75),
                 child: SearchBar(
                   hintText: 'Search gemstones...',
-                  onTap: () => selectPage(0),
+                  onTap: () => selectPage(1),
                 ),
               ),
             ),
-      drawer: selectedIndex == 0 ? null : DrawerWidget(),
+      drawer: selectedIndex == 1 ? null : DrawerWidget(),
       body: IndexedStack(
         index: selectedIndex,
         children: const [
-          SearchScreen(),
           HomeScreen(),
+          SearchScreen(),
           Center(child: Text('Profile Screen')),
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
         items: [
-          BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Search'),
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+          BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Search'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
         ],
         onTap: selectPage,

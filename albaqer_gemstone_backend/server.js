@@ -15,6 +15,20 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Request logging
+app.use((req, res, next) => {
+    console.log(`📨 ${new Date().toISOString()} - ${req.method} ${req.url}`);
+
+    // Log response
+    const originalSend = res.send;
+    res.send = function (data) {
+        console.log(`📤 ${new Date().toISOString()} - Response sent: ${res.statusCode}`);
+        originalSend.call(this, data);
+    };
+
+    next();
+});
+
 // Test database connection endpoint
 app.get('/api/test-db', async (req, res) => {
     try {
@@ -54,9 +68,10 @@ app.use(notFound);
 app.use(errorHandler);
 
 // Start server
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
     console.log(`🚀 Server running on port ${PORT}`);
     console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`🌐 Accessible at: http://localhost:${PORT} and http://10.0.2.2:${PORT}`);
 });
 
 // Graceful shutdown

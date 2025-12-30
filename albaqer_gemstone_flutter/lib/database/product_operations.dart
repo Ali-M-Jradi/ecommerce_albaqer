@@ -142,3 +142,13 @@ Future<List<Product>> searchProducts(String query) async {
   }).toList();
   return resultList;
 }
+
+// Load all unique product categories (types) from local database
+Future<List<String>> loadCategories() async {
+  GemstoneDatabase database = GemstoneDatabase();
+  final db = await database.getDatabase();
+  final result = await db.rawQuery(
+    'SELECT DISTINCT type FROM products WHERE type IS NOT NULL ORDER BY type',
+  );
+  return result.map((row) => row['type'] as String).toList();
+}
