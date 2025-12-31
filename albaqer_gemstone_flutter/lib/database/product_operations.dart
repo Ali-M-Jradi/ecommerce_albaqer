@@ -1,13 +1,18 @@
 import 'package:albaqer_gemstone_flutter/database/database.dart';
 import 'package:albaqer_gemstone_flutter/models/product.dart';
+import 'package:sqflite/sqflite.dart';
 
-// Insert a product into the database
+// Insert a product into the database (replaces if ID already exists)
 void insertProduct(Product product) async {
   // get an instance of the database
   GemstoneDatabase database = GemstoneDatabase();
   final db = await database.getDatabase();
-  // insert product into the database
-  db.insert('products', product.productMap);
+  // insert or replace product in the database
+  db.insert(
+    'products',
+    product.productMap,
+    conflictAlgorithm: ConflictAlgorithm.replace,
+  );
 }
 
 // Load all products from the database

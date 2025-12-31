@@ -6,7 +6,16 @@ import 'package:albaqer_gemstone_flutter/models/product.dart';
 class ProductService {
   // For Android Emulator: use 10.0.2.2 (maps to host machine's localhost)
   // For physical device/iOS simulator: use your computer's IP address
-  final String baseUrl = 'http://10.0.2.2:3000/api';
+  final String baseUrl = 'http://192.168.0.102:3000/api';
+
+  /// Helper to safely convert to double from dynamic (handles both String and num)
+  double _toDouble(dynamic value) {
+    if (value == null) return 0.0;
+    if (value is double) return value;
+    if (value is int) return value.toDouble();
+    if (value is String) return double.tryParse(value) ?? 0.0;
+    return 0.0;
+  }
 
   // ========== CREATE ==========
   /// Create a new product on the backend
@@ -27,8 +36,8 @@ class ProductService {
           name: data['name'],
           type: data['type'],
           description: data['description'],
-          basePrice: data['base_price'].toDouble(),
-          rating: data['rating']?.toDouble() ?? 0.0,
+          basePrice: _toDouble(data['base_price']),
+          rating: _toDouble(data['rating']),
           totalReviews: data['total_reviews'] ?? 0,
           quantityInStock: data['quantity_in_stock'],
           imageUrl: data['image_url'],
@@ -42,10 +51,10 @@ class ProductService {
           metalType: data['metal_type'],
           metalColor: data['metal_color'],
           metalPurity: data['metal_purity'],
-          metalWeightGrams: data['metal_weight_grams']?.toDouble(),
+          metalWeightGrams: _toDouble(data['metal_weight_grams']),
           stoneType: data['stone_type'],
           stoneColor: data['stone_color'],
-          stoneCarat: data['stone_carat']?.toDouble(),
+          stoneCarat: _toDouble(data['stone_carat']),
           stoneCut: data['stone_cut'],
           stoneClarity: data['stone_clarity'],
         );
@@ -86,8 +95,8 @@ class ProductService {
             name: json['name'],
             type: json['type'],
             description: json['description'],
-            basePrice: json['base_price'].toDouble(),
-            rating: json['rating']?.toDouble() ?? 0.0,
+            basePrice: _toDouble(json['base_price']),
+            rating: _toDouble(json['rating']),
             totalReviews: json['total_reviews'] ?? 0,
             quantityInStock: json['quantity_in_stock'],
             imageUrl: json['image_url'],
@@ -101,10 +110,10 @@ class ProductService {
             metalType: json['metal_type'],
             metalColor: json['metal_color'],
             metalPurity: json['metal_purity'],
-            metalWeightGrams: json['metal_weight_grams']?.toDouble(),
+            metalWeightGrams: _toDouble(json['metal_weight_grams']),
             stoneType: json['stone_type'],
             stoneColor: json['stone_color'],
-            stoneCarat: json['stone_carat']?.toDouble(),
+            stoneCarat: _toDouble(json['stone_carat']),
             stoneCut: json['stone_cut'],
             stoneClarity: json['stone_clarity'],
           );
@@ -133,8 +142,8 @@ class ProductService {
           name: json['name'],
           type: json['type'],
           description: json['description'],
-          basePrice: json['base_price'].toDouble(),
-          rating: json['rating']?.toDouble() ?? 0.0,
+          basePrice: _toDouble(json['base_price']),
+          rating: _toDouble(json['rating']),
           totalReviews: json['total_reviews'] ?? 0,
           quantityInStock: json['quantity_in_stock'],
           imageUrl: json['image_url'],
@@ -148,10 +157,10 @@ class ProductService {
           metalType: json['metal_type'],
           metalColor: json['metal_color'],
           metalPurity: json['metal_purity'],
-          metalWeightGrams: json['metal_weight_grams']?.toDouble(),
+          metalWeightGrams: _toDouble(json['metal_weight_grams']),
           stoneType: json['stone_type'],
           stoneColor: json['stone_color'],
-          stoneCarat: json['stone_carat']?.toDouble(),
+          stoneCarat: _toDouble(json['stone_carat']),
           stoneCut: json['stone_cut'],
           stoneClarity: json['stone_clarity'],
         );
@@ -186,8 +195,8 @@ class ProductService {
           name: json['name'],
           type: json['type'],
           description: json['description'],
-          basePrice: json['base_price'].toDouble(),
-          rating: json['rating']?.toDouble() ?? 0.0,
+          basePrice: _toDouble(json['base_price']),
+          rating: _toDouble(json['rating']),
           totalReviews: json['total_reviews'] ?? 0,
           quantityInStock: json['quantity_in_stock'],
           imageUrl: json['image_url'],
@@ -201,10 +210,10 @@ class ProductService {
           metalType: json['metal_type'],
           metalColor: json['metal_color'],
           metalPurity: json['metal_purity'],
-          metalWeightGrams: json['metal_weight_grams']?.toDouble(),
+          metalWeightGrams: _toDouble(json['metal_weight_grams']),
           stoneType: json['stone_type'],
           stoneColor: json['stone_color'],
-          stoneCarat: json['stone_carat']?.toDouble(),
+          stoneCarat: _toDouble(json['stone_carat']),
           stoneCut: json['stone_cut'],
           stoneClarity: json['stone_clarity'],
         );
@@ -308,8 +317,8 @@ class ProductService {
             name: json['name'],
             type: json['type'],
             description: json['description'],
-            basePrice: json['base_price'].toDouble(),
-            rating: json['rating']?.toDouble() ?? 0.0,
+            basePrice: _toDouble(json['base_price']),
+            rating: _toDouble(json['rating']),
             totalReviews: json['total_reviews'] ?? 0,
             quantityInStock: json['quantity_in_stock'],
             imageUrl: json['image_url'],
@@ -323,10 +332,10 @@ class ProductService {
             metalType: json['metal_type'],
             metalColor: json['metal_color'],
             metalPurity: json['metal_purity'],
-            metalWeightGrams: json['metal_weight_grams']?.toDouble(),
+            metalWeightGrams: _toDouble(json['metal_weight_grams']),
             stoneType: json['stone_type'],
             stoneColor: json['stone_color'],
-            stoneCarat: json['stone_carat']?.toDouble(),
+            stoneCarat: _toDouble(json['stone_carat']),
             stoneCut: json['stone_cut'],
             stoneClarity: json['stone_clarity'],
           );

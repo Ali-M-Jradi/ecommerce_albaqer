@@ -57,10 +57,10 @@ class _TabsScreenState extends State<TabsScreen> {
       drawer: selectedIndex == 1 ? null : DrawerWidget(),
       body: IndexedStack(
         index: selectedIndex,
-        children: const [
-          HomeScreen(),
-          SearchScreen(),
-          Center(child: Text('Profile Screen')),
+        children: [
+          const HomeScreen(),
+          SearchScreen(onBackPressed: () => selectPage(0)),
+          const Center(child: Text('Profile Screen')),
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(

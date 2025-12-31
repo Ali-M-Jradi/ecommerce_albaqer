@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/product.dart';
-import '../database/product_operations.dart';
+import '../services/data_manager.dart';
 import 'product_detail_screen.dart';
 
 class ProductsScreen extends StatefulWidget {
@@ -28,16 +28,17 @@ class _ProductsScreenState extends State<ProductsScreen> {
     });
 
     try {
+      final dataManager = DataManager();
       List<Product> result;
 
-      // If category provided, load by type, otherwise get all
+      // If category provided, filter by type, otherwise get all
       if (widget.category != null && widget.category!.isNotEmpty) {
-        result = await loadProductsByType(widget.category!);
+        result = await dataManager.getProductsByCategory(widget.category!);
       } else {
-        result = await loadProducts();
+        result = await dataManager.getProducts();
       }
 
-      print('Loaded ${result.length} products from local database');
+      print('✅ Loaded ${result.length} products via DataManager');
 
       setState(() {
         products = result;
@@ -177,58 +178,59 @@ class _ProductsScreenState extends State<ProductsScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     // Product Name
                     Text(
                       product.name,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
-                        fontSize: 14,
+                        fontSize: 13,
                       ),
-                      maxLines: 2,
+                      maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
 
                     // Specifications (Metal/Stone)
                     if (product.metalType != null || product.stoneType != null)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 2.0),
-                        child: Text(
-                          [
-                            if (product.metalType != null) product.metalType!,
-                            if (product.stoneType != null) product.stoneType!,
-                          ].join(' • '),
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: Colors.blue[700],
-                            fontWeight: FontWeight.w500,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                      Text(
+                        [
+                          if (product.metalType != null) product.metalType!,
+                          if (product.stoneType != null) product.stoneType!,
+                        ].join(' • '),
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: Colors.blue[700],
+                          fontWeight: FontWeight.w500,
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
+
+                    SizedBox(height: 4),
 
                     // Price and Rating
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
                           '\$${product.basePrice.toStringAsFixed(2)}',
                           style: TextStyle(
                             color: Colors.green[700],
                             fontWeight: FontWeight.bold,
-                            fontSize: 16,
+                            fontSize: 15,
                           ),
                         ),
-                        SizedBox(height: 4),
+                        SizedBox(height: 2),
                         Row(
                           children: [
-                            Icon(Icons.star, size: 14, color: Colors.amber),
-                            SizedBox(width: 4),
+                            Icon(Icons.star, size: 12, color: Colors.amber),
+                            SizedBox(width: 2),
                             Text(
                               '${product.rating.toStringAsFixed(1)} (${product.totalReviews})',
                               style: TextStyle(
-                                fontSize: 12,
+                                fontSize: 11,
                                 color: Colors.grey,
                               ),
                             ),
