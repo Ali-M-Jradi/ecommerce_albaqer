@@ -60,14 +60,12 @@ class _TabsScreenState extends State<TabsScreen> {
         children: [
           const HomeScreen(),
           SearchScreen(onBackPressed: () => selectPage(0)),
-          const Center(child: Text('Profile Screen')),
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
         items: [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Search'),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
         ],
         onTap: selectPage,
         currentIndex: selectedIndex,

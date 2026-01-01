@@ -11,15 +11,6 @@ class CartScreen extends StatefulWidget {
 class _CartScreenState extends State<CartScreen> {
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        SizedBox(height: 50),
-        Text('Cart Screen'),
-        ...Product.map((product) => ListTile(
-              title: Text(product.name),
-              subtitle: Text('\$${product.price.toStringAsFixed(2)}'),
-            )),           
-      ],
-    );
+    return Column(children: [SizedBox(height: 50), Text('Cart Screen')]);
   }
 }

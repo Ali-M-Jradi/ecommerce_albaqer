@@ -31,4 +31,22 @@ class User {
       'updated_at': updatedAt?.toIso8601String(),
     };
   }
+
+  /// Factory constructor to create User from JSON
+  factory User.fromJson(Map<String, dynamic> json) {
+    return User(
+      id: json['id'],
+      email: json['email'] ?? '',
+      passwordHash: json['password_hash'] ?? json['passwordHash'] ?? '',
+      fullName: json['full_name'] ?? json['fullName'] ?? json['name'] ?? '',
+      phone: json['phone'],
+      isActive: json['is_active'] != 0,
+      createdAt: json['created_at'] != null
+          ? DateTime.parse(json['created_at'])
+          : null,
+      updatedAt: json['updated_at'] != null
+          ? DateTime.parse(json['updated_at'])
+          : null,
+    );
+  }
 }

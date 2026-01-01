@@ -1,3 +1,4 @@
+import 'package:albaqer_gemstone_flutter/screens/login_screen.dart';
 import 'package:flutter/material.dart';
 import 'products_screen.dart';
 
@@ -50,6 +51,28 @@ class HomeScreen extends StatelessWidget {
                   ),
                   child: Text(
                     'View All Products',
+                    style: TextStyle(fontSize: 16),
+                  ),
+                ),
+              ),
+              SizedBox(height: 16),
+
+              // Login Button (for testing)
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => LoginScreen()),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    padding: EdgeInsets.symmetric(vertical: 16),
+                    backgroundColor: Colors.grey,
+                  ),
+                  child: Text(
+                    'Login / Register',
                     style: TextStyle(fontSize: 16),
                   ),
                 ),
