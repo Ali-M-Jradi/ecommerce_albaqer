@@ -97,6 +97,48 @@ Future<List<Product>> loadProductsByType(String type) async {
   return resultList;
 }
 
+// Get a single product by ID
+Future<Product?> getProductById(int productId) async {
+  GemstoneDatabase database = GemstoneDatabase();
+  final db = await database.getDatabase();
+  final result = await db.query(
+    'products',
+    where: 'id = ?',
+    whereArgs: [productId],
+  );
+
+  if (result.isEmpty) return null;
+
+  final row = result.first;
+  return Product(
+    id: row['id'] as int,
+    name: row['name'] as String,
+    type: row['type'] as String,
+    description: row['description'] as String?,
+    basePrice: row['base_price'] as double,
+    rating: row['rating'] as double? ?? 0.0,
+    totalReviews: row['total_reviews'] as int? ?? 0,
+    quantityInStock: row['quantity_in_stock'] as int,
+    imageUrl: row['image_url'] as String?,
+    isAvailable: (row['is_available'] as int) == 1,
+    createdAt: row['created_at'] != null
+        ? DateTime.parse(row['created_at'] as String)
+        : null,
+    updatedAt: row['updated_at'] != null
+        ? DateTime.parse(row['updated_at'] as String)
+        : null,
+    metalType: row['metal_type'] as String?,
+    metalColor: row['metal_color'] as String?,
+    metalPurity: row['metal_purity'] as String?,
+    metalWeightGrams: row['metal_weight_grams'] as double?,
+    stoneType: row['stone_type'] as String?,
+    stoneColor: row['stone_color'] as String?,
+    stoneCarat: row['stone_carat'] as double?,
+    stoneCut: row['stone_cut'] as String?,
+    stoneClarity: row['stone_clarity'] as String?,
+  );
+}
+
 // Update a product in the database
 void updateProduct(Product product) async {
   GemstoneDatabase database = GemstoneDatabase();

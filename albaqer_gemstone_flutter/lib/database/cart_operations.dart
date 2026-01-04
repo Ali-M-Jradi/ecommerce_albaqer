@@ -1,11 +1,11 @@
-import 'package:albaqer_gemstone_flutter/database/database.dart';     
-import 'package:albaqer_gemstone_flutter/models/cart_item.dart';  
+import 'package:albaqer_gemstone_flutter/database/database.dart';
+import 'package:albaqer_gemstone_flutter/models/cart_item.dart';
 
-// Add item to cart
-void addToCart(CartItem cartItem) async {
+// Add item to cart and return the inserted ID
+Future<int> addToCart(CartItem cartItem) async {
   GemstoneDatabase database = GemstoneDatabase();
   final db = await database.getDatabase();
-  db.insert('cart_items', cartItem.cartItemMap);
+  return await db.insert('cart_items', cartItem.cartItemMap);
 }
 
 // Load all cart items

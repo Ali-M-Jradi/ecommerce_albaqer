@@ -1,12 +1,30 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:albaqer_gemstone_flutter/models/product.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 /// Service class for handling all product-related API calls to the backend
 class ProductService {
   // For Android Emulator: use 10.0.2.2 (maps to host machine's localhost)
   // For physical device/iOS simulator: use your computer's IP address
-  final String baseUrl = 'http://192.168.0.102:3000/api';
+  final String baseUrl = 'http://192.168.0.109:3000/api';
+
+  /// Get authentication headers with token
+  Future<Map<String, String>> _getAuthHeaders() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString(
+      'token',
+    ); // Changed from 'auth_token' to 'token'
+
+    print(
+      '🔍 Retrieved token: ${token != null ? "Found (${token.substring(0, 10)}...)" : "Not found"}',
+    );
+
+    return {
+      'Content-Type': 'application/json',
+      if (token != null) 'Authorization': 'Bearer $token',
+    };
+  }
 
   /// Helper to safely convert to double from dynamic (handles both String and num)
   double _toDouble(dynamic value) {
@@ -18,13 +36,69 @@ class ProductService {
   }
 
   // ========== CREATE ==========
-  /// Create a new product on the backend
-  /// Returns the created Product with its ID, or null if failed
-  Future<Product?> createProduct(Product product) async {
+  /// Create a new product from Map data (simple version for admin)
+  /// Returns the created Product with its ID, or throws error if failed
+  Future<Product> createProduct(Map<String, dynamic> productData) async {
     try {
+      print('Creating product: ${productData['name']}');
+
+      final headers = await _getAuthHeaders();
+
       final response = await http.post(
         Uri.parse('$baseUrl/products'),
-        headers: {'Content-Type': 'application/json'},
+        headers: headers,
+        body: jsonEncode(productData),
+      );
+      if (response.statusCode == 201) {
+        final jsonResponse = jsonDecode(response.body);
+        final data =
+            jsonResponse['data']; // Backend wraps response in 'data' field
+
+        return Product(
+          id: data['id'],
+          name: data['name'] ?? '',
+          type: data['type'] ?? 'other',
+          description: data['description'],
+          basePrice: _toDouble(data['base_price']),
+          rating: _toDouble(data['rating'] ?? 0),
+          totalReviews: data['total_reviews'] ?? 0,
+          quantityInStock: data['quantity_in_stock'] ?? 0,
+          imageUrl: data['image_url'],
+          isAvailable: data['is_available'] ?? true,
+          createdAt: data['created_at'] != null
+              ? DateTime.parse(data['created_at'])
+              : null,
+          updatedAt: data['updated_at'] != null
+              ? DateTime.parse(data['updated_at'])
+              : null,
+          metalType: data['metal_type'],
+          metalColor: data['metal_color'],
+          metalPurity: data['metal_purity'],
+          metalWeightGrams: _toDouble(data['metal_weight_grams']),
+          stoneType: data['stone_type'],
+          stoneColor: data['stone_color'],
+          stoneCarat: _toDouble(data['stone_carat']),
+          stoneCut: data['stone_cut'],
+          stoneClarity: data['stone_clarity'],
+        );
+      } else {
+        throw Exception('Failed to create product: ${response.body}');
+      }
+    } catch (e) {
+      print('Error creating product: $e');
+      throw e;
+    }
+  }
+
+  /// Create a new product on the backend (using Product object)
+  /// Returns the created Product with its ID, or null if failed
+  Future<Product?> createProductFromObject(Product product) async {
+    try {
+      final headers = await _getAuthHeaders();
+
+      final response = await http.post(
+        Uri.parse('$baseUrl/products'),
+        headers: headers,
         body: jsonEncode(product.productMap),
       );
 
@@ -182,9 +256,11 @@ class ProductService {
   /// Returns the updated product or null if failed
   Future<Product?> updateProduct(Product product) async {
     try {
+      final headers = await _getAuthHeaders();
+
       final response = await http.put(
         Uri.parse('$baseUrl/products/${product.id}'),
-        headers: {'Content-Type': 'application/json'},
+        headers: headers,
         body: jsonEncode(product.productMap),
       );
 
@@ -235,18 +311,27 @@ class ProductService {
   /// Returns true if successful, false otherwise
   Future<bool> deleteProduct(int productId) async {
     try {
+      final headers = await _getAuthHeaders();
+      print('🔑 Delete headers: $headers');
+      print('🗑️ Deleting product ID: $productId');
+
       final response = await http.delete(
         Uri.parse('$baseUrl/products/$productId'),
+        headers: headers,
       );
 
+      print('📡 Delete response: ${response.statusCode}');
+      print('📄 Delete body: ${response.body}');
+
       if (response.statusCode == 200) {
-        print('Product deleted successfully');
+        print('✅ Product deleted successfully');
         return true;
       } else if (response.statusCode == 404) {
-        print('Product not found');
+        print('❌ Product not found');
         return false;
       } else {
-        print('Failed to delete product: ${response.statusCode}');
+        print('❌ Failed to delete product: ${response.statusCode}');
+        print('Error details: ${response.body}');
         return false;
       }
     } catch (e) {

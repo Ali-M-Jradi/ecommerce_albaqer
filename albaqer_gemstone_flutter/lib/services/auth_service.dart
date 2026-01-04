@@ -4,7 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/user.dart';
 
 class AuthService {
-  final String baseUrl = 'http://192.168.0.102:3000/api';
+  final String baseUrl = 'http://192.168.0.109:3000/api';
 
   // Singleton pattern (optional but recommended)
   static final AuthService _instance = AuthService._internal();

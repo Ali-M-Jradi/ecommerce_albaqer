@@ -4,6 +4,7 @@ class User {
   final String passwordHash;
   final String fullName;
   final String? phone;
+  final String role; // 'admin' or 'user'
   final bool isActive;
   final DateTime? createdAt;
   final DateTime? updatedAt;
@@ -14,10 +15,14 @@ class User {
     required this.passwordHash,
     required this.fullName,
     this.phone,
+    this.role = 'user', // Default to 'user'
     this.isActive = true,
     this.createdAt,
     this.updatedAt,
   });
+
+  // Helper method to check if user is admin
+  bool get isAdmin => role == 'admin';
 
   Map<String, dynamic> get userMap {
     return {
@@ -26,6 +31,7 @@ class User {
       'password_hash': passwordHash,
       'full_name': fullName,
       'phone': phone,
+      'role': role,
       'is_active': isActive ? 1 : 0,
       'created_at': createdAt?.toIso8601String(),
       'updated_at': updatedAt?.toIso8601String(),
@@ -40,6 +46,7 @@ class User {
       passwordHash: json['password_hash'] ?? json['passwordHash'] ?? '',
       fullName: json['full_name'] ?? json['fullName'] ?? json['name'] ?? '',
       phone: json['phone'],
+      role: json['role'] ?? 'user', // Get role from JSON, default to 'user'
       isActive: json['is_active'] != 0,
       createdAt: json['created_at'] != null
           ? DateTime.parse(json['created_at'])

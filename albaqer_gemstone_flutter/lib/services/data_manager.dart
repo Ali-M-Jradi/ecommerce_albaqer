@@ -25,7 +25,7 @@ class DataManager {
   Future<bool> isBackendAvailable() async {
     try {
       final response = await http
-          .get(Uri.parse('http://192.168.0.102:3000/api/health'))
+          .get(Uri.parse('http://192.168.0.109:3000/api/health'))
           .timeout(
             Duration(seconds: 5),
             onTimeout: () {
@@ -218,7 +218,7 @@ class DataManager {
     // 2. Try to add to backend (if available)
     if (await isBackendAvailable()) {
       try {
-        await _apiService.createProduct(product);
+        await _apiService.createProductFromObject(product);
         backendSuccess = true;
         print('✅ Added to backend');
       } catch (e) {

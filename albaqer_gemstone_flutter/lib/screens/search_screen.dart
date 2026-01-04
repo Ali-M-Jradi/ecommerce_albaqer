@@ -188,7 +188,7 @@ class _SearchScreenState extends State<SearchScreen> {
       margin: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       padding: EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.blue[50],
+        color: Colors.grey[100],
         borderRadius: BorderRadius.circular(8),
       ),
       child: Column(
@@ -199,13 +199,13 @@ class _SearchScreenState extends State<SearchScreen> {
             children: [
               Row(
                 children: [
-                  Icon(Icons.filter_alt, size: 16, color: Colors.blue[700]),
+                  Icon(Icons.filter_alt, size: 16, color: Colors.amber[700]),
                   SizedBox(width: 8),
                   Text(
                     'Active Filters',
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
-                      color: Colors.blue[900],
+                      color: Colors.amber[900],
                     ),
                   ),
                 ],
@@ -233,7 +233,7 @@ class _SearchScreenState extends State<SearchScreen> {
                     _applyFilters();
                   },
                   deleteIcon: Icon(Icons.close, size: 16),
-                  backgroundColor: Colors.blue[100],
+                  backgroundColor: Colors.grey[200],
                 ),
               if (_priceRange.start > 0 || _priceRange.end < 4000)
                 Chip(
@@ -245,7 +245,7 @@ class _SearchScreenState extends State<SearchScreen> {
                     _applyFilters();
                   },
                   deleteIcon: Icon(Icons.close, size: 16),
-                  backgroundColor: Colors.blue[100],
+                  backgroundColor: Colors.grey[200],
                 ),
               if (_searchController.text.isNotEmpty)
                 Chip(
@@ -255,7 +255,7 @@ class _SearchScreenState extends State<SearchScreen> {
                     _applyFilters();
                   },
                   deleteIcon: Icon(Icons.close, size: 16),
-                  backgroundColor: Colors.blue[100],
+                  backgroundColor: Colors.grey[200],
                 ),
             ],
           ),
@@ -288,7 +288,7 @@ class _SearchScreenState extends State<SearchScreen> {
         duration: Duration(milliseconds: 200),
         decoration: BoxDecoration(
           border: Border.all(
-            color: isSelected ? Colors.blue : Colors.transparent,
+            color: isSelected ? Colors.amber : Colors.transparent,
             width: 3,
           ),
           borderRadius: BorderRadius.circular(12),
@@ -303,11 +303,11 @@ class _SearchScreenState extends State<SearchScreen> {
             decoration: BoxDecoration(
               gradient: isSelected
                   ? LinearGradient(
-                      colors: [Colors.blue[400]!, Colors.blue[700]!],
+                      colors: [Colors.amber[400]!, Colors.amber[700]!],
                     )
                   : (makeWide
                         ? LinearGradient(
-                            colors: [Colors.blue[300]!, Colors.blue[600]!],
+                            colors: [Colors.amber[300]!, Colors.amber[600]!],
                           )
                         : null),
               borderRadius: BorderRadius.circular(12),

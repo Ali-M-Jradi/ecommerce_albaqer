@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../models/product.dart';
+import '../services/cart_service.dart';
+import 'cart_screen.dart';
 
 class ProductDetailScreen extends StatefulWidget {
   final Product product;
@@ -29,30 +32,56 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     }
   }
 
-  void _addToCart() {
-    // TODO: Implement cart functionality
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Added ${widget.product.name} to cart'),
-        duration: Duration(seconds: 2),
-      ),
+  Future<void> _addToCart() async {
+    // Get the cart service from Provider
+    final cartService = Provider.of<CartService>(context, listen: false);
+
+    // Add product to cart with selected quantity
+    final success = await cartService.addToCart(
+      product: widget.product,
+      quantity: quantity,
     );
+
+    // Show feedback to user
+    if (mounted) {
+      if (success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Added ${widget.product.name} (x$quantity) to cart'),
+            duration: Duration(seconds: 2),
+            backgroundColor: Colors.green,
+            action: SnackBarAction(
+              label: 'VIEW CART',
+              textColor: Colors.white,
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const CartScreen()),
+                );
+              },
+            ),
+          ),
+        );
+        // Reset quantity after successful add
+        setState(() {
+          quantity = 1;
+        });
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Could not add to cart. Check stock availability.'),
+            duration: Duration(seconds: 2),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Product Details'),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.share),
-            onPressed: () {
-              // TODO: Implement share functionality
-            },
-          ),
-        ],
-      ),
+      appBar: AppBar(title: Text('Product Details')),
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -232,7 +261,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w600,
-                                  color: Colors.blue[800],
+                                  color: Colors.amber[800],
                                 ),
                               ),
                               SizedBox(height: 8),
@@ -274,7 +303,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w600,
-                                  color: Colors.purple[800],
+                                  color: Colors.amber[800],
                                 ),
                               ),
                               SizedBox(height: 8),
@@ -320,7 +349,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                         onPressed: _decrementQuantity,
                         icon: Icon(Icons.remove_circle_outline),
                         iconSize: 32,
-                        color: Colors.blue,
+                        color: Colors.grey[700],
                       ),
                       SizedBox(width: 16),
                       Text(
@@ -335,7 +364,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                         onPressed: _incrementQuantity,
                         icon: Icon(Icons.add_circle_outline),
                         iconSize: 32,
-                        color: Colors.blue,
+                        color: Colors.amber[700],
                       ),
                     ],
                   ),

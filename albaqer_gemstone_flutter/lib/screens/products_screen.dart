@@ -200,7 +200,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
                         ].join(' • '),
                         style: TextStyle(
                           fontSize: 10,
-                          color: Colors.blue[700],
+                          color: Colors.grey[600],
                           fontWeight: FontWeight.w500,
                         ),
                         maxLines: 1,

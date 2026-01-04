@@ -1,7 +1,10 @@
 import 'package:albaqer_gemstone_flutter/screens/drawer_widget.dart';
 import 'package:albaqer_gemstone_flutter/screens/home_screen.dart';
 import 'package:albaqer_gemstone_flutter/screens/search_screen.dart';
+import 'package:albaqer_gemstone_flutter/screens/cart_screen.dart';
+import 'package:albaqer_gemstone_flutter/services/cart_service.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class TabsScreen extends StatefulWidget {
   const TabsScreen({super.key});
@@ -38,10 +41,50 @@ class _TabsScreenState extends State<TabsScreen> {
                 ),
               ),
               actions: [
-                IconButton(
-                  icon: Icon(Icons.shopping_cart, color: Colors.white),
-                  onPressed: () {
-                    // Navigate to cart screen
+                // Cart icon with badge showing item count
+                Consumer<CartService>(
+                  builder: (context, cartService, child) {
+                    return Stack(
+                      children: [
+                        IconButton(
+                          icon: Icon(Icons.shopping_cart, color: Colors.white),
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const CartScreen(),
+                              ),
+                            );
+                          },
+                        ),
+                        // Badge showing cart item count
+                        if (cartService.itemCount > 0)
+                          Positioned(
+                            right: 8,
+                            top: 8,
+                            child: Container(
+                              padding: EdgeInsets.all(4),
+                              decoration: BoxDecoration(
+                                color: Colors.red,
+                                shape: BoxShape.circle,
+                              ),
+                              constraints: BoxConstraints(
+                                minWidth: 16,
+                                minHeight: 16,
+                              ),
+                              child: Text(
+                                '${cartService.itemCount}',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                          ),
+                      ],
+                    );
                   },
                 ),
               ],
@@ -69,6 +112,9 @@ class _TabsScreenState extends State<TabsScreen> {
         ],
         onTap: selectPage,
         currentIndex: selectedIndex,
+        selectedItemColor: Colors.amber,
+        unselectedItemColor: Colors.grey,
+        backgroundColor: Colors.white,
       ),
     );
   }
