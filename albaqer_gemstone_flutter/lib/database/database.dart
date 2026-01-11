@@ -24,16 +24,6 @@ class GemstoneDatabase {
           'CREATE TABLE products(id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, type TEXT NOT NULL, description TEXT, base_price REAL NOT NULL, rating REAL DEFAULT 0, total_reviews INTEGER DEFAULT 0, quantity_in_stock INTEGER NOT NULL DEFAULT 0, image_url TEXT, is_available INTEGER DEFAULT 1, created_at TEXT, updated_at TEXT, metal_type TEXT, metal_color TEXT, metal_purity TEXT, metal_weight_grams REAL, stone_type TEXT, stone_color TEXT, stone_carat REAL, stone_cut TEXT, stone_clarity TEXT)',
         );
 
-        // Stones Table
-        await db.execute(
-          'CREATE TABLE stones(id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, color TEXT, cut TEXT, origin TEXT, carat_weight REAL, size_mm TEXT, clarity TEXT, price REAL NOT NULL, image_url TEXT, rating REAL DEFAULT 0)',
-        );
-
-        // Metals Table
-        await db.execute(
-          'CREATE TABLE metals(id INTEGER PRIMARY KEY AUTOINCREMENT, type TEXT NOT NULL, purity TEXT, color TEXT, weight_grams REAL, price_per_gram REAL, total_price REAL)',
-        );
-
         // Cart Table
         await db.execute(
           'CREATE TABLE carts(id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL, created_at TEXT, updated_at TEXT)',
