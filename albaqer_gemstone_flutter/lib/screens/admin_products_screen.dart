@@ -299,64 +299,55 @@ class _AddProductScreenState extends State<AddProductScreen> {
     try {
       final productService = ProductService();
 
-      // Create product data (only include fields with values)
-      final productData = <String, dynamic>{
-        'name': nameController.text.trim(),
-        'type': selectedType.toLowerCase(),
-        'base_price': double.parse(priceController.text),
-        'quantity_in_stock': int.parse(stockController.text),
-      };
+      // Create Product object (type-safe with required fields)
+      final newProductObj = Product(
+        name: nameController.text.trim(),
+        type: selectedType.toLowerCase(),
+        basePrice: double.parse(priceController.text),
+        quantityInStock: int.parse(stockController.text),
+        // Optional fields
+        description: descriptionController.text.trim().isNotEmpty
+            ? descriptionController.text.trim()
+            : null,
+        imageUrl: imageUrlController.text.trim().isNotEmpty
+            ? imageUrlController.text.trim()
+            : null,
+        // Metal specifications
+        metalType: metalTypeController.text.trim().isNotEmpty
+            ? metalTypeController.text.trim()
+            : null,
+        metalColor: metalColorController.text.trim().isNotEmpty
+            ? metalColorController.text.trim()
+            : null,
+        metalPurity: metalPurityController.text.trim().isNotEmpty
+            ? metalPurityController.text.trim()
+            : null,
+        metalWeightGrams: metalWeightController.text.trim().isNotEmpty
+            ? double.tryParse(metalWeightController.text)
+            : null,
+        // Stone specifications
+        stoneType: stoneTypeController.text.trim().isNotEmpty
+            ? stoneTypeController.text.trim()
+            : null,
+        stoneColor: stoneColorController.text.trim().isNotEmpty
+            ? stoneColorController.text.trim()
+            : null,
+        stoneCarat: stoneCaratController.text.trim().isNotEmpty
+            ? double.tryParse(stoneCaratController.text)
+            : null,
+        stoneCut: stoneCutController.text.trim().isNotEmpty
+            ? stoneCutController.text.trim()
+            : null,
+        stoneClarity: stoneClarityController.text.trim().isNotEmpty
+            ? stoneClarityController.text.trim()
+            : null,
+      );
 
-      // Add optional fields only if they have values
-      if (descriptionController.text.trim().isNotEmpty) {
-        productData['description'] = descriptionController.text.trim();
-      }
-      if (imageUrlController.text.trim().isNotEmpty) {
-        productData['image_url'] = imageUrlController.text.trim();
-      }
-
-      // Metal specifications
-      if (metalTypeController.text.trim().isNotEmpty) {
-        productData['metal_type'] = metalTypeController.text.trim();
-      }
-      if (metalColorController.text.trim().isNotEmpty) {
-        productData['metal_color'] = metalColorController.text.trim();
-      }
-      if (metalPurityController.text.trim().isNotEmpty) {
-        productData['metal_purity'] = metalPurityController.text.trim();
-      }
-      if (metalWeightController.text.trim().isNotEmpty) {
-        final weight = double.tryParse(metalWeightController.text);
-        if (weight != null) {
-          productData['metal_weight_grams'] = weight;
-        }
-      }
-
-      // Stone specifications
-      if (stoneTypeController.text.trim().isNotEmpty) {
-        productData['stone_type'] = stoneTypeController.text.trim();
-      }
-      if (stoneColorController.text.trim().isNotEmpty) {
-        productData['stone_color'] = stoneColorController.text.trim();
-      }
-      if (stoneCaratController.text.trim().isNotEmpty) {
-        final carat = double.tryParse(stoneCaratController.text);
-        if (carat != null) {
-          productData['stone_carat'] = carat;
-        }
-      }
-      if (stoneCutController.text.trim().isNotEmpty) {
-        productData['stone_cut'] = stoneCutController.text.trim();
-      }
-      if (stoneClarityController.text.trim().isNotEmpty) {
-        productData['stone_clarity'] = stoneClarityController.text.trim();
-      }
-
-      final newProduct = await productService.createProduct(productData);
+      final newProduct = await productService.createProduct(newProductObj);
 
       setState(() => isLoading = false);
 
-      if (mounted) {
+      if (newProduct != null && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('${newProduct.name} added successfully!'),
