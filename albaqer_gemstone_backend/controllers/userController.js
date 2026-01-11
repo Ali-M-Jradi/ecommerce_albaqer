@@ -36,7 +36,7 @@ const registerUser = async (req, res) => {
         const result = await pool.query(
             `INSERT INTO users (email, password_hash, full_name, phone)
              VALUES ($1, $2, $3, $4)
-             RETURNING id, email, full_name, phone, created_at`,
+             RETURNING id, email, full_name, phone, role, created_at`,
             [email, password_hash, full_name, phone]
         );
 
@@ -51,7 +51,8 @@ const registerUser = async (req, res) => {
                 email: user.email,
                 full_name: user.full_name,
                 phone: user.phone,
-                token: generateToken(user.id, user.email, 'customer')
+                role: user.role,
+                token: generateToken(user.id, user.email, user.role || 'user')
             }
         });
     } catch (error) {
@@ -123,7 +124,8 @@ const loginUser = async (req, res) => {
                 email: user.email,
                 full_name: user.full_name,
                 phone: user.phone,
-                token: generateToken(user.id, user.email, user.role || 'customer')
+                role: user.role || 'user',
+                token: generateToken(user.id, user.email, user.role || 'user')
             }
         });
     } catch (error) {
@@ -141,7 +143,7 @@ const loginUser = async (req, res) => {
 // @access  Private
 const getUserProfile = async (req, res) => {
     const result = await pool.query(
-        'SELECT id, email, full_name, phone, is_active, created_at FROM users WHERE id = $1',
+        'SELECT id, email, full_name, phone, role, is_active, created_at FROM users WHERE id = $1',
         [req.user.id]
     );
 
