@@ -5,9 +5,10 @@ A complete e-commerce platform with Node.js backend and Flutter mobile app.
 ## ✅ Project Status
 
 - **Backend**: ✅ Fully configured and operational
-- **Database**: ✅ PostgreSQL with 12 tables
-- **Flutter App**: ✅ Local SQLite working, backend integration ready
-- **API**: ✅ RESTful endpoints with JWT authentication
+- **Database**: ✅ PostgreSQL backend + SQLite local storage
+- **Flutter App**: ✅ Fully functional with 10 screens
+- **API**: ✅ Core endpoints (Products, Users, Orders) with JWT authentication
+- **Environment**: ⚠️ Requires .env configuration
 
 ## 📊 System Architecture
 
@@ -84,37 +85,58 @@ flutter run
 
 ## 📱 Flutter App Features
 
-- ✅ Local SQLite database for offline operation
-- ✅ Backend API integration with smart caching
-- ✅ Product catalog with metal/stone specifications
-- ✅ Shopping cart functionality
-- ✅ User authentication (JWT)
-- ✅ Order management
-- ✅ Product reviews and ratings
-- ✅ Wishlist functionality
-- ✅ Multiple addresses support
+### ✅ Implemented
+- Local SQLite database for offline operation
+- Backend API integration with smart caching (DataManager)
+- Product catalog with metal/stone specifications
+- Shopping cart functionality (local only)
+- User authentication (register/login with JWT)
+- Order management (create and view orders)
+- Admin panel (add/edit/delete products)
+- Product search functionality
+- Product detail views
+- Home screen with featured products
+
+### 📦 Models Ready (Backend API Not Yet Implemented)
+- Product reviews and ratings
+- Wishlist functionality
+- Multiple addresses support
 
 ## 🔧 Backend API Features
 
-### Database (12 Tables)
-- **users** - User accounts and authentication
-- **products** - Complete product catalog (21 columns)
-- **orders** - Order management (14 columns)
-- **order_items** - Order line items
-- **payments** - Payment processing (10 columns)
-- **carts** / **cart_items** - Shopping cart
-- **addresses** - Shipping/billing addresses
-- **categories** / **product_categories** - Product organization
-- **reviews** - Product reviews
-- **wishlists** - User wish lists
+### Database
+- **Backend**: PostgreSQL database (12+ tables)
+- **Frontend**: Local SQLite database (mirrors backend structure)
 
-### API Endpoints
-- `/api/products` - Product CRUD operations
-- `/api/users` - User management & authentication
-- `/api/orders` - Order processing
-- `/api/categories` - Product categories
-- `/api/reviews` - Product reviews
-- `/api/payments` - Payment tracking
+### ✅ Implemented API Endpoints
+
+#### Products (`/api/products`)
+- `GET /api/products` - Get all products
+- `GET /api/products/categories` - Get product categories
+- `GET /api/products/search` - Search products
+- `GET /api/products/:id` - Get product by ID
+- `POST /api/products` - Create product (admin only)
+- `PUT /api/products/:id` - Update product (admin only)
+- `DELETE /api/products/:id` - Delete product (admin only)
+
+#### Users (`/api/users`)
+- `POST /api/users/register` - User registration
+- `POST /api/users/login` - User login (returns JWT)
+- `GET /api/users/profile` - Get user profile (protected)
+- `PUT /api/users/profile` - Update user profile (protected)
+- `GET /api/users/all` - Get all users (admin only)
+
+#### Orders (`/api/orders`)
+- `GET /api/orders/my-orders` - Get user's orders (protected)
+- `GET /api/orders/all` - Get all orders (admin only)
+- `GET /api/orders/:id` - Get order by ID (protected)
+- `POST /api/orders` - Create new order (protected)
+- `PUT /api/orders/:id/status` - Update order status (admin only)
+- `DELETE /api/orders/:id` - Delete order (admin only)
+
+#### Health & Testing
+- `GET /api/health` - Server health check
+- `GET /api/test-db` - Database connection test
 
 ## 📚 Documentation
 
@@ -152,6 +174,8 @@ flutter test
 ## 🔐 Environment Configuration
 
 ### Backend (.env)
+**⚠️ Required**: Create a `.env` file in the `albaqer_gemstone_backend/` directory:
+
 ```env
 DB_HOST=localhost
 DB_PORT=5432
@@ -159,7 +183,8 @@ DB_USER=postgres
 DB_PASSWORD=your_password
 DB_NAME=albaqer_gemstone_ecommerce_db
 PORT=3000
-JWT_SECRET=your_jwt_secret
+JWT_SECRET=your_jwt_secret_here
+NODE_ENV=development
 ```
 
 ### Flutter (lib/services/)
