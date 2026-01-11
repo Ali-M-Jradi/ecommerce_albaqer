@@ -188,8 +188,9 @@ class _SearchScreenState extends State<SearchScreen> {
       margin: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       padding: EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.grey[100],
+        color: Colors.amber[50],
         borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.amber[200]!, width: 1),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -213,10 +214,14 @@ class _SearchScreenState extends State<SearchScreen> {
               TextButton(
                 onPressed: _clearAllFilters,
                 style: TextButton.styleFrom(
+                  foregroundColor: Colors.amber[700],
                   padding: EdgeInsets.symmetric(horizontal: 8),
                   minimumSize: Size(0, 30),
                 ),
-                child: Text('Clear All'),
+                child: Text(
+                  'Clear All',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
               ),
             ],
           ),
@@ -233,7 +238,8 @@ class _SearchScreenState extends State<SearchScreen> {
                     _applyFilters();
                   },
                   deleteIcon: Icon(Icons.close, size: 16),
-                  backgroundColor: Colors.grey[200],
+                  backgroundColor: Colors.amber[100],
+                  side: BorderSide(color: Colors.amber[300]!),
                 ),
               if (_priceRange.start > 0 || _priceRange.end < 4000)
                 Chip(
@@ -245,7 +251,8 @@ class _SearchScreenState extends State<SearchScreen> {
                     _applyFilters();
                   },
                   deleteIcon: Icon(Icons.close, size: 16),
-                  backgroundColor: Colors.grey[200],
+                  backgroundColor: Colors.amber[100],
+                  side: BorderSide(color: Colors.amber[300]!),
                 ),
               if (_searchController.text.isNotEmpty)
                 Chip(
@@ -255,7 +262,8 @@ class _SearchScreenState extends State<SearchScreen> {
                     _applyFilters();
                   },
                   deleteIcon: Icon(Icons.close, size: 16),
-                  backgroundColor: Colors.grey[200],
+                  backgroundColor: Colors.amber[100],
+                  side: BorderSide(color: Colors.amber[300]!),
                 ),
             ],
           ),
@@ -479,7 +487,10 @@ class _SearchScreenState extends State<SearchScreen> {
               icon: Icon(Icons.clear_all),
               label: Text('Clear All Filters'),
               style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.amber,
+                foregroundColor: Colors.black,
                 padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                elevation: 3,
               ),
             ),
           ],
@@ -513,7 +524,9 @@ class _SearchScreenState extends State<SearchScreen> {
         if (_isSearching)
           Padding(
             padding: EdgeInsets.all(48),
-            child: Center(child: CircularProgressIndicator()),
+            child: Center(
+              child: CircularProgressIndicator(color: Colors.amber),
+            ),
           )
         else if (_searchResults.isEmpty)
           _buildEmptyState()
@@ -560,16 +573,20 @@ class _SearchScreenState extends State<SearchScreen> {
                   controller: _searchController,
                   decoration: InputDecoration(
                     hintText: 'Search products...',
-                    prefixIcon: Icon(Icons.search),
+                    prefixIcon: Icon(Icons.search, color: Colors.amber),
                     suffixIcon: _searchController.text.isNotEmpty
                         ? IconButton(
-                            icon: Icon(Icons.clear),
+                            icon: Icon(Icons.clear, color: Colors.amber),
                             onPressed: () {
                               _searchController.clear();
                               setState(() => _searchResults = []);
                             },
                           )
                         : null,
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(25),
+                      borderSide: BorderSide(color: Colors.amber, width: 2),
+                    ),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(25),
                     ),
@@ -583,7 +600,7 @@ class _SearchScreenState extends State<SearchScreen> {
               ),
               SizedBox(width: 10),
               IconButton(
-                icon: Icon(Icons.shopping_cart),
+                icon: Icon(Icons.shopping_cart, color: Colors.amber),
                 onPressed: () {
                   // Navigate to cart screen
                 },
@@ -659,6 +676,8 @@ class _SearchScreenState extends State<SearchScreen> {
                     min: 0,
                     max: 4000,
                     divisions: 80,
+                    activeColor: Colors.amber,
+                    inactiveColor: Colors.amber[100],
                     labels: RangeLabels(
                       '\$${_priceRange.start.round()}',
                       '\$${_priceRange.end.round()}',
