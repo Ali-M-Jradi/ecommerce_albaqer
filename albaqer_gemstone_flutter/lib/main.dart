@@ -1,6 +1,5 @@
 import 'package:albaqer_gemstone_flutter/screens/tabs_screen.dart';
 import 'package:albaqer_gemstone_flutter/screens/login_screen.dart';
-import 'package:albaqer_gemstone_flutter/database/init_sample_data.dart';
 import 'package:albaqer_gemstone_flutter/services/data_manager.dart';
 import 'package:albaqer_gemstone_flutter/services/auth_service.dart';
 import 'package:albaqer_gemstone_flutter/services/cart_service.dart';
@@ -9,9 +8,6 @@ import 'package:provider/provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  // Initialize local database with sample data (fallback)
-  await initializeSampleData();
 
   // Sync with backend to get real products
   print('🔄 Syncing with backend...');
