@@ -7,7 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 class ProductService {
   // For Android Emulator: use 10.0.2.2 (maps to host machine's localhost)
   // For physical device/iOS simulator: use your computer's IP address
-  final String baseUrl = 'http://192.168.0.109:3000/api';
+  final String baseUrl = 'http://192.168.0.112:3000/api';
 
   /// Get authentication headers with token
   Future<Map<String, String>> _getAuthHeaders() async {
@@ -36,63 +36,9 @@ class ProductService {
   }
 
   // ========== CREATE ==========
-  /// Create a new product from Map data (simple version for admin)
-  /// Returns the created Product with its ID, or throws error if failed
-  Future<Product> createProduct(Map<String, dynamic> productData) async {
-    try {
-      print('Creating product: ${productData['name']}');
-
-      final headers = await _getAuthHeaders();
-
-      final response = await http.post(
-        Uri.parse('$baseUrl/products'),
-        headers: headers,
-        body: jsonEncode(productData),
-      );
-      if (response.statusCode == 201) {
-        final jsonResponse = jsonDecode(response.body);
-        final data =
-            jsonResponse['data']; // Backend wraps response in 'data' field
-
-        return Product(
-          id: data['id'],
-          name: data['name'] ?? '',
-          type: data['type'] ?? 'other',
-          description: data['description'],
-          basePrice: _toDouble(data['base_price']),
-          rating: _toDouble(data['rating'] ?? 0),
-          totalReviews: data['total_reviews'] ?? 0,
-          quantityInStock: data['quantity_in_stock'] ?? 0,
-          imageUrl: data['image_url'],
-          isAvailable: data['is_available'] ?? true,
-          createdAt: data['created_at'] != null
-              ? DateTime.parse(data['created_at'])
-              : null,
-          updatedAt: data['updated_at'] != null
-              ? DateTime.parse(data['updated_at'])
-              : null,
-          metalType: data['metal_type'],
-          metalColor: data['metal_color'],
-          metalPurity: data['metal_purity'],
-          metalWeightGrams: _toDouble(data['metal_weight_grams']),
-          stoneType: data['stone_type'],
-          stoneColor: data['stone_color'],
-          stoneCarat: _toDouble(data['stone_carat']),
-          stoneCut: data['stone_cut'],
-          stoneClarity: data['stone_clarity'],
-        );
-      } else {
-        throw Exception('Failed to create product: ${response.body}');
-      }
-    } catch (e) {
-      print('Error creating product: $e');
-      throw e;
-    }
-  }
-
-  /// Create a new product on the backend (using Product object)
+  /// Create a new product on the backend
   /// Returns the created Product with its ID, or null if failed
-  Future<Product?> createProductFromObject(Product product) async {
+  Future<Product?> createProduct(Product product) async {
     try {
       final headers = await _getAuthHeaders();
 

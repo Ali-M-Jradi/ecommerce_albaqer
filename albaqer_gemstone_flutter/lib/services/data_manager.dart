@@ -3,8 +3,10 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 import 'package:albaqer_gemstone_flutter/database/product_operations.dart';
+import 'package:albaqer_gemstone_flutter/database/category_operations.dart';
 import 'package:albaqer_gemstone_flutter/services/product_service.dart';
 import 'package:albaqer_gemstone_flutter/models/product.dart';
+import 'package:albaqer_gemstone_flutter/models/category.dart';
 
 /// Smart data manager that handles both local SQLite and backend PostgreSQL
 /// Implements offline-first strategy with automatic fallback
@@ -25,7 +27,7 @@ class DataManager {
   Future<bool> isBackendAvailable() async {
     try {
       final response = await http
-          .get(Uri.parse('http://192.168.0.109:3000/api/health'))
+          .get(Uri.parse('http://192.168.0.112:3000/api/health'))
           .timeout(
             Duration(seconds: 5),
             onTimeout: () {
@@ -218,7 +220,7 @@ class DataManager {
     // 2. Try to add to backend (if available)
     if (await isBackendAvailable()) {
       try {
-        await _apiService.createProductFromObject(product);
+        await _apiService.createProduct(product);
         backendSuccess = true;
         print('✅ Added to backend');
       } catch (e) {
@@ -382,16 +384,18 @@ class DataManager {
   Future<List<String>> getCategoriesOfflineFirst() async {
     print('📂 Loading categories offline-first...');
 
-    // Load local first for instant display
-    List<String> localCategories = await loadCategories();
-    print('✅ Loaded ${localCategories.length} categories from local');
+    // Load categories from the categories table
+    List<Category> categoryObjects = await loadCategories();
+    List<String> categoryNames = categoryObjects.map((c) => c.name).toList();
+
+    print('✅ Loaded ${categoryNames.length} categories from local');
 
     // Sync with backend in background (non-blocking)
     if (await isBackendAvailable()) {
       _syncCategoriesInBackground();
     }
 
-    return localCategories;
+    return categoryNames;
   }
 
   /// Background sync for categories
