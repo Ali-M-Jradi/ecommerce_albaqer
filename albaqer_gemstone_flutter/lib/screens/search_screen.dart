@@ -622,18 +622,7 @@ class _SearchScreenState extends State<SearchScreen> {
                 SizedBox(height: 10),
 
                 // Categories section
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 10),
-                  child: Text(
-                    "Categories",
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 2,
-                    ),
-                  ),
-                ),
-                SizedBox(height: 15),
+             
 
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: 10),

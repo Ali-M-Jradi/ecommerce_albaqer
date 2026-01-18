@@ -16,7 +16,7 @@ class GemstoneDatabase {
       onCreate: (db, version) async {
         // Users Table
         await db.execute(
-          'CREATE TABLE users(id INTEGER PRIMARY KEY AUTOINCREMENT, email TEXT UNIQUE NOT NULL, password_hash TEXT NOT NULL, full_name TEXT NOT NULL, phone TEXT, created_at TEXT, updated_at TEXT, is_active INTEGER DEFAULT 1)',
+          'CREATE TABLE users(id INTEGER PRIMARY KEY AUTOINCREMENT, email TEXT UNIQUE NOT NULL, password_hash TEXT NOT NULL, full_name TEXT NOT NULL, phone TEXT, role TEXT DEFAULT "user", created_at TEXT, updated_at TEXT, is_active INTEGER DEFAULT 1)',
         );
 
         // Products Table
@@ -31,7 +31,7 @@ class GemstoneDatabase {
 
         // Cart Items Table
         await db.execute(
-          'CREATE TABLE cart_items(id INTEGER PRIMARY KEY AUTOINCREMENT, cart_id INTEGER NOT NULL, product_id INTEGER NOT NULL, quantity INTEGER NOT NULL DEFAULT 1, price_at_add REAL NOT NULL)',
+          'CREATE TABLE cart_items(id INTEGER PRIMARY KEY AUTOINCREMENT, cart_id INTEGER NOT NULL, product_id INTEGER NOT NULL, quantity INTEGER NOT NULL DEFAULT 1, price_at_add REAL NOT NULL, tracking_id TEXT)',
         );
 
         // Orders Table
@@ -73,6 +73,26 @@ class GemstoneDatabase {
         await db.execute(
           'CREATE TABLE payments(id INTEGER PRIMARY KEY AUTOINCREMENT, order_id INTEGER NOT NULL, payment_method TEXT NOT NULL, transaction_id TEXT, amount REAL NOT NULL, currency TEXT DEFAULT "USD", status TEXT DEFAULT "pending", payment_gateway TEXT, card_last_four TEXT, created_at TEXT)',
         );
+
+        // Insert default categories
+        await db.insert('categories', {
+          'name': 'Ring',
+          'description': 'Rings and bands',
+        });
+        await db.insert('categories', {
+          'name': 'Necklace',
+          'description': 'Necklaces and pendants',
+        });
+        await db.insert('categories', {
+          'name': 'Bracelet',
+          'description': 'Bracelets and bangles',
+        });
+        await db.insert('categories', {
+          'name': 'Earring',
+          'description': 'Earrings and studs',
+        });
+
+        print('✅ Default categories inserted');
       },
       onUpgrade: (db, oldVersion, newVersion) async {
         if (oldVersion < 2) {
@@ -103,9 +123,46 @@ class GemstoneDatabase {
             'CREATE TABLE IF NOT EXISTS payments(id INTEGER PRIMARY KEY AUTOINCREMENT, order_id INTEGER NOT NULL, payment_method TEXT NOT NULL, transaction_id TEXT, amount REAL NOT NULL, currency TEXT DEFAULT "USD", status TEXT DEFAULT "pending", payment_gateway TEXT, card_last_four TEXT, created_at TEXT)',
           );
         }
+        if (oldVersion < 4) {
+          // Add role column to users table
+          await db.execute(
+            'ALTER TABLE users ADD COLUMN role TEXT DEFAULT "user"',
+          );
+        }
+        if (oldVersion < 5) {
+          // Add tracking_id column to cart_items table for UUID
+          await db.execute(
+            'ALTER TABLE cart_items ADD COLUMN tracking_id TEXT',
+          );
+        }
+        if (oldVersion < 6) {
+          // Insert default categories if they don't exist
+          var categoriesCount = await db.rawQuery(
+            'SELECT COUNT(*) FROM categories',
+          );
+          if (categoriesCount.first.values.first == 0) {
+            await db.insert('categories', {
+              'name': 'Ring',
+              'description': 'Rings and bands',
+            });
+            await db.insert('categories', {
+              'name': 'Necklace',
+              'description': 'Necklaces and pendants',
+            });
+            await db.insert('categories', {
+              'name': 'Bracelet',
+              'description': 'Bracelets and bangles',
+            });
+            await db.insert('categories', {
+              'name': 'Earring',
+              'description': 'Earrings and studs',
+            });
+            print('✅ Default categories inserted during upgrade');
+          }
+        }
       },
       // increment version number only when the database scheme changes
-      version: 3,
+      version: 6,
     );
     return db;
   }

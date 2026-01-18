@@ -215,6 +215,18 @@ class _CartScreenState extends State<CartScreen> {
                     product.type,
                     style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                   ),
+                  SizedBox(height: 4),
+
+                  // Tracking ID (UUID)
+                  if (cartItem.trackingId != null)
+                    Text(
+                      'Track ID: ${cartItem.trackingId!.substring(0, 8)}...',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.blue[700],
+                        fontFamily: 'monospace',
+                      ),
+                    ),
                   SizedBox(height: 8),
 
                   // Price per unit

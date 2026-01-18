@@ -1,6 +1,5 @@
-import 'package:albaqer_gemstone_flutter/database/database.dart';     
-import 'package:albaqer_gemstone_flutter/models/user.dart'; 
-
+import 'package:albaqer_gemstone_flutter/database/database.dart';
+import 'package:albaqer_gemstone_flutter/models/user.dart';
 
 // Insert a user
 void insertUser(User user) async {
@@ -28,6 +27,7 @@ Future<User?> getUserByEmail(String email) async {
     passwordHash: row['password_hash'] as String,
     fullName: row['full_name'] as String,
     phone: row['phone'] as String?,
+    role: row['role'] as String? ?? 'user',
     isActive: (row['is_active'] as int) == 1,
     createdAt: row['created_at'] != null
         ? DateTime.parse(row['created_at'] as String)

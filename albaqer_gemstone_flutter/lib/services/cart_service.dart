@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:uuid/uuid.dart';
 import '../models/cart_item.dart';
 import '../models/product.dart';
 import '../database/cart_operations.dart' as cart_db;
@@ -31,6 +32,8 @@ class CartService extends ChangeNotifier {
   static final CartService _instance = CartService._internal();
   factory CartService() => _instance;
   CartService._internal();
+
+  final uuid = Uuid();
 
   // ========================================
   // FEATURE 2: STATE MANAGEMENT
@@ -133,23 +136,28 @@ class CartService extends ChangeNotifier {
         print('✅ Updated quantity: ${product.name} (x$newQuantity)');
       } else {
         // Product doesn't exist - ADD new entry
+        // Generate unique tracking ID using UUID
+        String uniqueTrackingId = uuid.v4();
+
         CartItem newItem = CartItem(
           cartId: _currentCartId,
           productId: product.id!,
           quantity: quantity,
-          priceAtAdd: product.basePrice, // Save current price
+          priceAtAdd: product.basePrice,
+          trackingId: uniqueTrackingId,
         );
 
         // Add to database and get the inserted ID
         final insertedId = await cart_db.addToCart(newItem);
 
-        // Create item with proper ID
+        // Create item with proper ID and UUID
         newItem = CartItem(
           id: insertedId,
           cartId: _currentCartId,
           productId: product.id!,
           quantity: quantity,
           priceAtAdd: product.basePrice,
+          trackingId: uniqueTrackingId,
         );
 
         // Add to local state (UI will show immediately)
@@ -157,7 +165,7 @@ class CartService extends ChangeNotifier {
         _cartProducts.add(product);
 
         print(
-          '✅ Added to cart: ${product.name} (x$quantity) with ID: $insertedId',
+          '✅ Added to cart: ${product.name} (x$quantity)\n   DB ID: $insertedId | UUID: $uniqueTrackingId',
         );
       }
 

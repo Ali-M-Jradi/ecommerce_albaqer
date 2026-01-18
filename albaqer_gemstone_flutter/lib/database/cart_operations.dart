@@ -24,6 +24,7 @@ Future<List<CartItem>> loadCartItems(int cartId) async {
       productId: row['product_id'] as int,
       quantity: row['quantity'] as int,
       priceAtAdd: row['price_at_add'] as double,
+      trackingId: row['tracking_id'] as String?,
     );
   }).toList();
   return resultList;

@@ -243,7 +243,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 const SizedBox(height: 16),
 
                 // ========================================
-                // PASSWORD FIELD
+                //  Q   QPASSWORD FIELD
                 // ========================================
                 TextFormField(
                   controller: _passwordController,

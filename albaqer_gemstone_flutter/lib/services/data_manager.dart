@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:http/http.dart' as http;
-import 'dart:convert';
 
 import 'package:albaqer_gemstone_flutter/database/product_operations.dart';
 import 'package:albaqer_gemstone_flutter/database/category_operations.dart';
@@ -27,7 +26,7 @@ class DataManager {
   Future<bool> isBackendAvailable() async {
     try {
       final response = await http
-          .get(Uri.parse('http://192.168.0.112:3000/api/health'))
+          .get(Uri.parse('http://10.91.89.60:3000/api/health'))
           .timeout(
             Duration(seconds: 5),
             onTimeout: () {
@@ -380,20 +379,15 @@ class DataManager {
   // ═══════════════════════════════════════════════════════════
 
   /// Get categories with offline-first strategy
-  /// Loads from local immediately, syncs backend in background
+  /// Loads from local database only (no backend dependency)
   Future<List<String>> getCategoriesOfflineFirst() async {
-    print('📂 Loading categories offline-first...');
+    print('📂 Loading categories from local database...');
 
     // Load categories from the categories table
     List<Category> categoryObjects = await loadCategories();
     List<String> categoryNames = categoryObjects.map((c) => c.name).toList();
 
-    print('✅ Loaded ${categoryNames.length} categories from local');
-
-    // Sync with backend in background (non-blocking)
-    if (await isBackendAvailable()) {
-      _syncCategoriesInBackground();
-    }
+    print('✅ Loaded ${categoryNames.length} categories from local database');
 
     return categoryNames;
   }

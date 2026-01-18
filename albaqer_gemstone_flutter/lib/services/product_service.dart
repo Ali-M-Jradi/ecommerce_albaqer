@@ -7,7 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 class ProductService {
   // For Android Emulator: use 10.0.2.2 (maps to host machine's localhost)
   // For physical device/iOS simulator: use your computer's IP address
-  final String baseUrl = 'http://192.168.0.112:3000/api';
+  final String baseUrl = 'http://10.91.89.60:3000/api';
 
   /// Get authentication headers with token
   Future<Map<String, String>> _getAuthHeaders() async {

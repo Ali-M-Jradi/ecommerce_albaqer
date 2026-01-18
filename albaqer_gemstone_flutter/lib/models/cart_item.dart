@@ -4,6 +4,7 @@ class CartItem {
   final int productId;
   final int quantity;
   final double priceAtAdd;
+  final String? trackingId;
 
   CartItem({
     this.id,
@@ -11,6 +12,7 @@ class CartItem {
     required this.productId,
     required this.quantity,
     required this.priceAtAdd,
+    this.trackingId,
   });
 
   Map<String, dynamic> get cartItemMap {
@@ -20,6 +22,7 @@ class CartItem {
       'product_id': productId,
       'quantity': quantity,
       'price_at_add': priceAtAdd,
+      'tracking_id': trackingId,
     };
   }
 }
