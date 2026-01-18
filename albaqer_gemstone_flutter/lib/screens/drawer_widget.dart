@@ -1,5 +1,6 @@
 import 'package:albaqer_gemstone_flutter/screens/login_screen.dart';
 import 'package:albaqer_gemstone_flutter/screens/admin_products_screen.dart';
+import 'package:albaqer_gemstone_flutter/screens/chatbot_screen.dart';
 import 'package:albaqer_gemstone_flutter/services/auth_service.dart';
 import 'package:flutter/material.dart';
 
@@ -107,6 +108,24 @@ class _DrawerWidgetState extends State<DrawerWidget> {
                   title: Text('Home'),
                   onTap: () {
                     Navigator.pop(context);
+                  },
+                ),
+
+                // AI Assistant (Chatbot)
+                ListTile(
+                  leading: Icon(Icons.chat_bubble, color: Colors.purple),
+                  title: Text('AI Assistant'),
+                  subtitle: Text('Chat with our gemstone expert'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ChatbotScreen(
+                          userId: isLoggedIn ? null : null, // Pass user ID if available
+                        ),
+                      ),
+                    );
                   },
                 ),
 

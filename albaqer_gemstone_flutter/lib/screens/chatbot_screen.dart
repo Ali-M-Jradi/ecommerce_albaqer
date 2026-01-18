@@ -37,12 +37,14 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
 
   void _addWelcomeMessage() {
     setState(() {
-      _messages.add(ChatMessage(
-        role: 'assistant',
-        content:
-            '👋 Assalamu Alaikum! Welcome to AlBaqer Islamic Gemstone Store.\n\nI can help you with:\n• Product recommendations\n• Stone information and benefits\n• Islamic significance of gemstones\n• Pricing and delivery\n• Order tracking\n\nHow can I assist you today?',
-        timestamp: DateTime.now(),
-      ));
+      _messages.add(
+        ChatMessage(
+          role: 'assistant',
+          content:
+              '👋 Assalamu Alaikum! Welcome to AlBaqer Islamic Gemstone Store.\n\nI can help you with:\n• Product recommendations\n• Stone information and benefits\n• Islamic significance of gemstones\n• Pricing and delivery\n• Order tracking\n\nHow can I assist you today?',
+          timestamp: DateTime.now(),
+        ),
+      );
     });
   }
 
@@ -52,11 +54,9 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
 
     // Add user message
     setState(() {
-      _messages.add(ChatMessage(
-        role: 'user',
-        content: message,
-        timestamp: DateTime.now(),
-      ));
+      _messages.add(
+        ChatMessage(role: 'user', content: message, timestamp: DateTime.now()),
+      );
       _isLoading = true;
     });
 
@@ -72,23 +72,27 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
 
       setState(() {
         _sessionId = response['session_id'];
-        _messages.add(ChatMessage(
-          role: 'assistant',
-          content: response['message'],
-          routedTo: response['routed_to'],
-          timestamp: DateTime.now(),
-        ));
+        _messages.add(
+          ChatMessage(
+            role: 'assistant',
+            content: response['message'],
+            routedTo: response['routed_to'],
+            timestamp: DateTime.now(),
+          ),
+        );
         _isLoading = false;
       });
 
       _scrollToBottom();
     } catch (e) {
       setState(() {
-        _messages.add(ChatMessage(
-          role: 'error',
-          content: '❌ Failed to send message. Please check your connection.',
-          timestamp: DateTime.now(),
-        ));
+        _messages.add(
+          ChatMessage(
+            role: 'error',
+            content: '❌ Failed to send message. Please check your connection.',
+            timestamp: DateTime.now(),
+          ),
+        );
         _isLoading = false;
       });
       _showSnackBar('Error: ${e.toString()}', isError: true);
@@ -194,9 +198,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
           // Messages list
           Expanded(
             child: _messages.isEmpty
-                ? const Center(
-                    child: CircularProgressIndicator(),
-                  )
+                ? const Center(child: CircularProgressIndicator())
                 : ListView.builder(
                     controller: _scrollController,
                     padding: const EdgeInsets.all(16),
@@ -284,8 +286,9 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Row(
-        mainAxisAlignment:
-            isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
+        mainAxisAlignment: isUser
+            ? MainAxisAlignment.end
+            : MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (!isUser) ...[
@@ -301,8 +304,9 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
           ],
           Flexible(
             child: Column(
-              crossAxisAlignment:
-                  isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+              crossAxisAlignment: isUser
+                  ? CrossAxisAlignment.end
+                  : CrossAxisAlignment.start,
               children: [
                 Container(
                   padding: const EdgeInsets.all(12),
@@ -310,8 +314,8 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                     color: isUser
                         ? Theme.of(context).primaryColor
                         : isError
-                            ? Colors.red.shade50
-                            : Colors.grey.shade100,
+                        ? Colors.red.shade50
+                        : Colors.grey.shade100,
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: Column(
@@ -342,10 +346,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                 const SizedBox(height: 4),
                 Text(
                   _formatTime(message.timestamp),
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: Colors.grey.shade500,
-                  ),
+                  style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
                 ),
               ],
             ),
@@ -354,11 +355,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
             const SizedBox(width: 8),
             CircleAvatar(
               backgroundColor: Theme.of(context).primaryColor,
-              child: const Icon(
-                Icons.person,
-                color: Colors.white,
-                size: 20,
-              ),
+              child: const Icon(Icons.person, color: Colors.white, size: 20),
             ),
           ],
         ],
@@ -371,9 +368,11 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
         .replaceAll('_AGENT', '')
         .replaceAll('_', ' ')
         .split(' ')
-        .map((word) => word.isNotEmpty
-            ? word[0].toUpperCase() + word.substring(1).toLowerCase()
-            : '')
+        .map(
+          (word) => word.isNotEmpty
+              ? word[0].toUpperCase() + word.substring(1).toLowerCase()
+              : '',
+        )
         .join(' ');
   }
 

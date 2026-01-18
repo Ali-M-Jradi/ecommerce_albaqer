@@ -2,11 +2,11 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class ChatbotService {
-  // TODO: Update this to your server's IP address
-  // Find your IP: Open CMD and type "ipconfig", look for IPv4 Address
-  // For Android Emulator use: http://10.0.2.2:8000/api
-  // For real device use: http://YOUR_LOCAL_IP:8000/api (e.g., http://192.168.1.100:8000/api)
-  static const String baseUrl = 'http://10.0.2.2:8000/api';
+  // Server IP Configuration
+  // For Android Emulator: Use http://10.0.2.2:8000/api
+  // For Real Device/iOS: Use http://192.168.0.116:8000/api
+  // Your computer's IP: 192.168.0.116
+  static const String baseUrl = 'http://192.168.0.116:8000/api';
 
   /// Send a chat message to the AlBaqer chatbot
   static Future<Map<String, dynamic>> sendMessage({
@@ -31,7 +31,8 @@ class ChatbotService {
         return jsonDecode(response.body);
       } else {
         throw Exception(
-            'Failed to send message: ${response.statusCode} - ${response.body}');
+          'Failed to send message: ${response.statusCode} - ${response.body}',
+        );
       }
     } catch (e) {
       print('Error sending message: $e');
@@ -83,9 +84,7 @@ class ChatbotService {
   }
 
   /// Delete a conversation by session ID
-  static Future<void> deleteConversation({
-    required String sessionId,
-  }) async {
+  static Future<void> deleteConversation({required String sessionId}) async {
     try {
       final response = await http.delete(
         Uri.parse('$baseUrl/chat/history/$sessionId'),
@@ -96,7 +95,9 @@ class ChatbotService {
       } else if (response.statusCode == 404) {
         throw Exception('Conversation not found');
       } else {
-        throw Exception('Failed to delete conversation: ${response.statusCode}');
+        throw Exception(
+          'Failed to delete conversation: ${response.statusCode}',
+        );
       }
     } catch (e) {
       print('Error deleting conversation: $e');
@@ -107,9 +108,9 @@ class ChatbotService {
   /// Check if the chatbot API is healthy
   static Future<bool> checkHealth() async {
     try {
-      final response = await http.get(
-        Uri.parse('${baseUrl.replaceAll('/api', '')}/api/health'),
-      ).timeout(const Duration(seconds: 5));
+      final response = await http
+          .get(Uri.parse('${baseUrl.replaceAll('/api', '')}/api/health'))
+          .timeout(const Duration(seconds: 5));
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
