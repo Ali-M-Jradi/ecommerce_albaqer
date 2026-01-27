@@ -2,10 +2,9 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/user.dart';
+import '../config/api_config.dart';
 
 class AuthService {
-  final String baseUrl = 'http://10.91.89.60:3000/api';
-
   // Singleton pattern (optional but recommended)
   static final AuthService _instance = AuthService._internal();
   factory AuthService() => _instance;
@@ -20,6 +19,8 @@ class AuthService {
   }) async {
     try {
       print('📝 Registering with backend: $email');
+
+      final baseUrl = await ApiConfig.baseUrl;
 
       final response = await http
           .post(
@@ -107,6 +108,8 @@ class AuthService {
   }) async {
     try {
       print('🔐 Logging in with backend: $email');
+
+      final baseUrl = await ApiConfig.baseUrl;
 
       final response = await http
           .post(
@@ -221,6 +224,8 @@ class AuthService {
     try {
       final token = await getToken();
       if (token == null) return false;
+
+      final baseUrl = await ApiConfig.baseUrl;
 
       final response = await http.get(
         Uri.parse('$baseUrl/users/validate'),

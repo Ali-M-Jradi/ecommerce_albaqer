@@ -43,7 +43,6 @@ class CartService extends ChangeNotifier {
 
   List<CartItem> _cartItems = [];
   List<Product> _cartProducts = [];
-  int _currentUserId = 1; // In production, get from auth service
   int _currentCartId = 1; // Each user has one cart
 
   // Getters - Provide read-only access to cart data

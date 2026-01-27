@@ -2,13 +2,10 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:albaqer_gemstone_flutter/models/product.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../config/api_config.dart';
 
 /// Service class for handling all product-related API calls to the backend
 class ProductService {
-  // For Android Emulator: use 10.0.2.2 (maps to host machine's localhost)
-  // For physical device/iOS simulator: use your computer's IP address
-  final String baseUrl = 'http://10.91.89.60:3000/api';
-
   /// Get authentication headers with token
   Future<Map<String, String>> _getAuthHeaders() async {
     final prefs = await SharedPreferences.getInstance();
@@ -41,6 +38,7 @@ class ProductService {
   Future<Product?> createProduct(Product product) async {
     try {
       final headers = await _getAuthHeaders();
+      final baseUrl = await ApiConfig.baseUrl;
 
       final response = await http.post(
         Uri.parse('$baseUrl/products'),
@@ -93,6 +91,7 @@ class ProductService {
   /// Returns a list of products, or empty list if failed
   Future<List<Product>> fetchAllProducts() async {
     try {
+      final baseUrl = await ApiConfig.baseUrl;
       print('📡 Fetching products from: $baseUrl/products');
 
       final response = await http
@@ -153,6 +152,7 @@ class ProductService {
   /// Returns the product or null if not found or failed
   Future<Product?> fetchProductById(int id) async {
     try {
+      final baseUrl = await ApiConfig.baseUrl;
       final response = await http.get(Uri.parse('$baseUrl/products/$id'));
 
       if (response.statusCode == 200) {
@@ -203,6 +203,7 @@ class ProductService {
   Future<Product?> updateProduct(Product product) async {
     try {
       final headers = await _getAuthHeaders();
+      final baseUrl = await ApiConfig.baseUrl;
 
       final response = await http.put(
         Uri.parse('$baseUrl/products/${product.id}'),
@@ -258,6 +259,7 @@ class ProductService {
   Future<bool> deleteProduct(int productId) async {
     try {
       final headers = await _getAuthHeaders();
+      final baseUrl = await ApiConfig.baseUrl;
       print('🔑 Delete headers: $headers');
       print('🗑️ Deleting product ID: $productId');
 
@@ -291,6 +293,7 @@ class ProductService {
   /// Returns a list of category names, or empty list if failed
   Future<List<String>> fetchCategories() async {
     try {
+      final baseUrl = await ApiConfig.baseUrl;
       final response = await http.get(
         Uri.parse('$baseUrl/products/categories'),
       );
@@ -319,6 +322,7 @@ class ProductService {
     double? maxPrice,
   }) async {
     try {
+      final baseUrl = await ApiConfig.baseUrl;
       // Build query parameters
       Map<String, String> queryParams = {};
       if (query.isNotEmpty) {

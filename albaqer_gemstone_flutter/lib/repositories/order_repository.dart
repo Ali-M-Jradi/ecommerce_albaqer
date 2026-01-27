@@ -38,48 +38,6 @@ class OrderRepository {
   final AuthService _authService = AuthService();
 
   /// ==================================================================================
-  /// PLACE ORDER - Create New Order
-  /// ==================================================================================
-  /// Strategy:
-  /// 1. Validate user is logged in
-  /// 2. Send order to backend
-  /// 3. Return success/failure (no local storage)
-  ///
-  /// Use Cases:
-  /// - Checkout process
-  /// - Converting cart to order
-  ///
-  /// Returns:
-  /// - Order object if successful
-  /// - null if failed (with error logged)
-  Future<Order?> placeOrder(Order order) async {
-    print('🛒 OrderRepository: Placing order...');
-
-    try {
-      // Ensure user is authenticated
-      final token = await _authService.getToken();
-      if (token == null) {
-        print('❌ User not authenticated');
-        throw Exception('Please login to place an order');
-      }
-
-      // Send order to backend
-      final createdOrder = await _orderService.createOrder(order);
-
-      if (createdOrder != null) {
-        print('✅ Order placed successfully: ${createdOrder.orderNumber}');
-        return createdOrder;
-      } else {
-        print('❌ Failed to place order on backend');
-        throw Exception('Failed to place order. Please try again.');
-      }
-    } catch (e) {
-      print('❌ Error placing order: $e');
-      rethrow; // Let UI handle the error
-    }
-  }
-
-  /// ==================================================================================
   /// GET USER ORDERS - Fetch Order History
   /// ==================================================================================
   /// Strategy:

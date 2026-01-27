@@ -1,32 +1,160 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:albaqer_gemstone_flutter/models/order.dart';
+import 'package:albaqer_gemstone_flutter/models/order_item.dart';
+import '../config/api_config.dart';
 
 /// Service class for handling all order-related API calls to the backend
 class OrderService {
-  // For Android Emulator: use 10.0.2.2 (maps to host machine's localhost)
-  final String baseUrl = 'http://10.91.89.60:3000/api';
+  /// Get authentication token from storage
+  Future<String?> _getToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('token');
+  }
+
+  /// Get current user ID from storage
+  Future<int?> _getUserId() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getInt('user_id');
+  }
+
+  /// Generate a unique order number
+  String _generateOrderNumber() {
+    final timestamp = DateTime.now().millisecondsSinceEpoch;
+    final random = (timestamp % 10000).toString().padLeft(4, '0');
+    return 'ORD-$timestamp-$random';
+  }
+
+  /// Get current user orders
+  Future<List<Order>> getMyOrders() async {
+    try {
+      final token = await _getToken();
+      if (token == null) {
+        print('No auth token found');
+        return [];
+      }
+
+      final baseUrl = await ApiConfig.baseUrl;
+
+      final response = await http.get(
+        Uri.parse('$baseUrl/orders/my-orders'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final jsonResponse = jsonDecode(response.body);
+        List<dynamic> data = jsonResponse['data'];
+        return data.map((json) {
+          return Order(
+            id: json['id'],
+            userId: json['user_id'],
+            orderNumber: json['order_number'],
+            totalAmount: double.parse(json['total_amount'].toString()),
+            taxAmount: json['tax_amount'] != null
+                ? double.parse(json['tax_amount'].toString())
+                : 0.0,
+            shippingCost: json['shipping_cost'] != null
+                ? double.parse(json['shipping_cost'].toString())
+                : 0.0,
+            discountAmount: json['discount_amount'] != null
+                ? double.parse(json['discount_amount'].toString())
+                : 0.0,
+            status: json['status'] ?? 'pending',
+            shippingAddressId: json['shipping_address_id'],
+            billingAddressId: json['billing_address_id'],
+            trackingNumber: json['tracking_number'],
+            notes: json['notes'],
+            createdAt: json['created_at'] != null
+                ? DateTime.parse(json['created_at'])
+                : null,
+            updatedAt: json['updated_at'] != null
+                ? DateTime.parse(json['updated_at'])
+                : null,
+          );
+        }).toList();
+      } else {
+        print('Failed to fetch my orders: ${response.statusCode}');
+        return [];
+      }
+    } catch (e) {
+      print('Error fetching my orders: $e');
+      return [];
+    }
+  }
 
   // ========== CREATE ==========
-  /// Create a new order on the backend
-  Future<Order?> createOrder(Order order) async {
+  /// Create a new order on the backend with order items
+  /// Takes cart totals and items, creates order and updates inventory
+  Future<Order?> createOrder({
+    required double subtotal,
+    required double taxAmount,
+    required double shippingCost,
+    required List<OrderItem> orderItems,
+    String? notes,
+  }) async {
     try {
+      final token = await _getToken();
+      if (token == null) {
+        print('❌ No auth token - user must be logged in to place order');
+        return null;
+      }
+
+      final userId = await _getUserId();
+      if (userId == null) {
+        print('❌ No user ID found');
+        return null;
+      }
+
+      final orderNumber = _generateOrderNumber();
+      final totalAmount = subtotal + taxAmount + shippingCost;
+
+      final orderData = {
+        'user_id': userId,
+        'order_number': orderNumber,
+        'total_amount': totalAmount,
+        'tax_amount': taxAmount,
+        'shipping_cost': shippingCost,
+        'discount_amount': 0.0,
+        'notes': notes,
+        'order_items': orderItems.map((item) => item.toJson()).toList(),
+      };
+
+      print('🛒 Creating order: $orderNumber');
+      print('📊 Total: \$${totalAmount.toStringAsFixed(2)}');
+      print('📦 Items: ${orderItems.length}');
+      final baseUrl = await ApiConfig.baseUrl;
       final response = await http.post(
         Uri.parse('$baseUrl/orders'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode(order.orderMap),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode(orderData),
       );
 
       if (response.statusCode == 201) {
-        final data = jsonDecode(response.body);
+        final jsonResponse = jsonDecode(response.body);
+        final data = jsonResponse['data'];
+        print('✅ Order created successfully: ${data['order_number']}');
+
         return Order(
           id: data['id'],
           userId: data['user_id'],
           orderNumber: data['order_number'],
-          totalAmount: data['total_amount'].toDouble(),
-          taxAmount: data['tax_amount']?.toDouble() ?? 0.0,
-          shippingCost: data['shipping_cost']?.toDouble() ?? 0.0,
-          discountAmount: data['discount_amount']?.toDouble() ?? 0.0,
+          totalAmount: double.parse(data['total_amount'].toString()),
+          taxAmount: data['tax_amount'] != null
+              ? double.parse(data['tax_amount'].toString())
+              : 0.0,
+          shippingCost: data['shipping_cost'] != null
+              ? double.parse(data['shipping_cost'].toString())
+              : 0.0,
+          discountAmount: data['discount_amount'] != null
+              ? double.parse(data['discount_amount'].toString())
+              : 0.0,
           status: data['status'] ?? 'pending',
           shippingAddressId: data['shipping_address_id'],
           billingAddressId: data['billing_address_id'],
@@ -40,11 +168,12 @@ class OrderService {
               : null,
         );
       } else {
-        print('Failed to create order: ${response.statusCode}');
+        print('❌ Failed to create order: ${response.statusCode}');
+        print('Response: ${response.body}');
         return null;
       }
     } catch (e) {
-      print('Error creating order: $e');
+      print('❌ Error creating order: $e');
       return null;
     }
   }
@@ -53,6 +182,7 @@ class OrderService {
   /// Fetch all orders from the backend
   Future<List<Order>> fetchAllOrders() async {
     try {
+      final baseUrl = await ApiConfig.baseUrl;
       final response = await http.get(Uri.parse('$baseUrl/orders'));
 
       if (response.statusCode == 200) {
@@ -63,10 +193,16 @@ class OrderService {
             id: json['id'],
             userId: json['user_id'],
             orderNumber: json['order_number'],
-            totalAmount: json['total_amount'].toDouble(),
-            taxAmount: json['tax_amount']?.toDouble() ?? 0.0,
-            shippingCost: json['shipping_cost']?.toDouble() ?? 0.0,
-            discountAmount: json['discount_amount']?.toDouble() ?? 0.0,
+            totalAmount: double.parse(json['total_amount'].toString()),
+            taxAmount: json['tax_amount'] != null
+                ? double.parse(json['tax_amount'].toString())
+                : 0.0,
+            shippingCost: json['shipping_cost'] != null
+                ? double.parse(json['shipping_cost'].toString())
+                : 0.0,
+            discountAmount: json['discount_amount'] != null
+                ? double.parse(json['discount_amount'].toString())
+                : 0.0,
             status: json['status'] ?? 'pending',
             shippingAddressId: json['shipping_address_id'],
             billingAddressId: json['billing_address_id'],
@@ -94,6 +230,7 @@ class OrderService {
   /// Fetch a single order by ID from the backend
   Future<Order?> fetchOrderById(int id) async {
     try {
+      final baseUrl = await ApiConfig.baseUrl;
       final response = await http.get(Uri.parse('$baseUrl/orders/$id'));
 
       if (response.statusCode == 200) {
@@ -102,10 +239,16 @@ class OrderService {
           id: json['id'],
           userId: json['user_id'],
           orderNumber: json['order_number'],
-          totalAmount: json['total_amount'].toDouble(),
-          taxAmount: json['tax_amount']?.toDouble() ?? 0.0,
-          shippingCost: json['shipping_cost']?.toDouble() ?? 0.0,
-          discountAmount: json['discount_amount']?.toDouble() ?? 0.0,
+          totalAmount: double.parse(json['total_amount'].toString()),
+          taxAmount: json['tax_amount'] != null
+              ? double.parse(json['tax_amount'].toString())
+              : 0.0,
+          shippingCost: json['shipping_cost'] != null
+              ? double.parse(json['shipping_cost'].toString())
+              : 0.0,
+          discountAmount: json['discount_amount'] != null
+              ? double.parse(json['discount_amount'].toString())
+              : 0.0,
           status: json['status'] ?? 'pending',
           shippingAddressId: json['shipping_address_id'],
           billingAddressId: json['billing_address_id'],
@@ -135,6 +278,7 @@ class OrderService {
   /// Update an existing order on the backend
   Future<Order?> updateOrder(Order order) async {
     try {
+      final baseUrl = await ApiConfig.baseUrl;
       final response = await http.put(
         Uri.parse('$baseUrl/orders/${order.id}'),
         headers: {'Content-Type': 'application/json'},
@@ -147,10 +291,16 @@ class OrderService {
           id: json['id'],
           userId: json['user_id'],
           orderNumber: json['order_number'],
-          totalAmount: json['total_amount'].toDouble(),
-          taxAmount: json['tax_amount']?.toDouble() ?? 0.0,
-          shippingCost: json['shipping_cost']?.toDouble() ?? 0.0,
-          discountAmount: json['discount_amount']?.toDouble() ?? 0.0,
+          totalAmount: double.parse(json['total_amount'].toString()),
+          taxAmount: json['tax_amount'] != null
+              ? double.parse(json['tax_amount'].toString())
+              : 0.0,
+          shippingCost: json['shipping_cost'] != null
+              ? double.parse(json['shipping_cost'].toString())
+              : 0.0,
+          discountAmount: json['discount_amount'] != null
+              ? double.parse(json['discount_amount'].toString())
+              : 0.0,
           status: json['status'] ?? 'pending',
           shippingAddressId: json['shipping_address_id'],
           billingAddressId: json['billing_address_id'],
@@ -180,6 +330,7 @@ class OrderService {
   /// Update order status only
   Future<bool> updateOrderStatus(int orderId, String status) async {
     try {
+      final baseUrl = await ApiConfig.baseUrl;
       final response = await http.put(
         Uri.parse('$baseUrl/orders/$orderId'),
         headers: {'Content-Type': 'application/json'},
@@ -203,6 +354,7 @@ class OrderService {
   /// Delete an order from the backend
   Future<bool> deleteOrder(int orderId) async {
     try {
+      final baseUrl = await ApiConfig.baseUrl;
       final response = await http.delete(Uri.parse('$baseUrl/orders/$orderId'));
 
       if (response.statusCode == 200) {

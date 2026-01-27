@@ -1,6 +1,7 @@
 import 'package:albaqer_gemstone_flutter/screens/login_screen.dart';
 import 'package:albaqer_gemstone_flutter/screens/admin_products_screen.dart';
 import 'package:albaqer_gemstone_flutter/screens/chatbot_screen.dart';
+import 'package:albaqer_gemstone_flutter/screens/wishlist_screen.dart';
 import 'package:albaqer_gemstone_flutter/services/auth_service.dart';
 import 'package:flutter/material.dart';
 
@@ -122,9 +123,25 @@ class _DrawerWidgetState extends State<DrawerWidget> {
                       context,
                       MaterialPageRoute(
                         builder: (context) => ChatbotScreen(
-                          userId: isLoggedIn ? null : null, // Pass user ID if available
+                          userId: isLoggedIn
+                              ? null
+                              : null, // Pass user ID if available
                         ),
                       ),
+                    );
+                  },
+                ),
+
+                // Wishlist
+                ListTile(
+                  leading: Icon(Icons.favorite, color: Colors.red),
+                  title: Text('My Wishlist'),
+                  subtitle: Text('Saved items'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => WishlistScreen()),
                     );
                   },
                 ),

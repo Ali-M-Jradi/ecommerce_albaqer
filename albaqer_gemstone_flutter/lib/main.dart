@@ -3,11 +3,16 @@ import 'package:albaqer_gemstone_flutter/screens/login_screen.dart';
 import 'package:albaqer_gemstone_flutter/services/data_manager.dart';
 import 'package:albaqer_gemstone_flutter/services/auth_service.dart';
 import 'package:albaqer_gemstone_flutter/services/cart_service.dart';
+import 'package:albaqer_gemstone_flutter/services/wishlist_service.dart';
+import 'package:albaqer_gemstone_flutter/config/api_config.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Print API configuration for debugging
+  ApiConfig.printConfig();
 
   // Sync with backend to get real products
   print('🔄 Syncing with backend...');
@@ -31,11 +36,13 @@ class AlBaqerMain extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // EXPLAIN IN PRESENTATION: ChangeNotifierProvider wraps the entire app
-    // This allows CartService to be accessed from anywhere in the widget tree
-    // When cart changes, all listening widgets automatically rebuild
-    return ChangeNotifierProvider(
-      create: (context) => CartService()..loadCart(),
+    // MultiProvider wraps the entire app for multiple services
+    // CartService and WishlistService are accessible from anywhere
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (context) => CartService()..loadCart()),
+        ChangeNotifierProvider(create: (context) => WishlistService()),
+      ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         theme: ThemeData(

@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
+const os = require('os');
 const pool = require('./db/connection');
 const { errorHandler, notFound } = require('./middleware/errorHandler');
 
@@ -67,11 +68,38 @@ app.use('/api/orders', orderRoutes);
 app.use(notFound);
 app.use(errorHandler);
 
+// Helper function to get local IP address
+function getLocalIpAddress() {
+    const interfaces = os.networkInterfaces();
+    for (const name of Object.keys(interfaces)) {
+        for (const iface of interfaces[name]) {
+            // Skip internal and non-IPv4 addresses
+            if (iface.family === 'IPv4' && !iface.internal) {
+                return iface.address;
+            }
+        }
+    }
+    return 'localhost';
+}
+
 // Start server
 app.listen(PORT, '0.0.0.0', () => {
-    console.log(`🚀 Server running on port ${PORT}`);
+    const localIp = getLocalIpAddress();
+
+    console.log('═══════════════════════════════════════════════════════');
+    console.log('🚀 AlBaqer Gemstone Backend Server');
+    console.log('═══════════════════════════════════════════════════════');
+    console.log(`✅ Server running on port ${PORT}`);
     console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
-    console.log(`🌐 Accessible at: http://localhost:${PORT} and http://10.0.2.2:${PORT}`);
+    console.log('');
+    console.log('📱 Access URLs:');
+    console.log(`   Local:            http://localhost:${PORT}/api`);
+    console.log(`   Network:          http://${localIp}:${PORT}/api`);
+    console.log(`   Android Emulator: http://10.0.2.2:${PORT}/api`);
+    console.log('');
+    console.log('⚙️  Update Flutter app config:');
+    console.log(`   lib/config/api_config.dart → _baseIp = '${localIp}'`);
+    console.log('═══════════════════════════════════════════════════════');
 });
 
 // Graceful shutdown

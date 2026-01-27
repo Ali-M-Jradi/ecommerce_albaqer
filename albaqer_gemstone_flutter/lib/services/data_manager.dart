@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:http/http.dart' as http;
+import '../config/api_config.dart';
 
 import 'package:albaqer_gemstone_flutter/database/product_operations.dart';
 import 'package:albaqer_gemstone_flutter/database/category_operations.dart';
@@ -25,8 +26,9 @@ class DataManager {
   /// Returns true if backend responds within timeout
   Future<bool> isBackendAvailable() async {
     try {
+      final healthUrl = await ApiConfig.healthUrl;
       final response = await http
-          .get(Uri.parse('http://10.91.89.60:3000/api/health'))
+          .get(Uri.parse(healthUrl))
           .timeout(
             Duration(seconds: 5),
             onTimeout: () {
@@ -204,7 +206,6 @@ class DataManager {
     print('➕ Adding product: ${product.name}');
 
     bool localSuccess = false;
-    bool backendSuccess = false;
 
     // 1. Add to local database first (always works offline)
     try {
@@ -220,7 +221,6 @@ class DataManager {
     if (await isBackendAvailable()) {
       try {
         await _apiService.createProduct(product);
-        backendSuccess = true;
         print('✅ Added to backend');
       } catch (e) {
         print('⚠️ Failed to add to backend: $e');
@@ -238,7 +238,6 @@ class DataManager {
     print('✏️ Updating product: ${product.name}');
 
     bool localSuccess = false;
-    bool backendSuccess = false;
 
     // 1. Update local database
     try {
@@ -254,7 +253,6 @@ class DataManager {
     if (await isBackendAvailable()) {
       try {
         await _apiService.updateProduct(product);
-        backendSuccess = true;
         print('✅ Updated in backend');
       } catch (e) {
         print('⚠️ Failed to update backend: $e');
@@ -272,7 +270,6 @@ class DataManager {
     print('🗑️ Deleting product: ${product.name}');
 
     bool localSuccess = false;
-    bool backendSuccess = false;
 
     // 1. Delete from backend first (if available)
     if (await isBackendAvailable()) {
@@ -282,7 +279,6 @@ class DataManager {
           return false;
         }
         await _apiService.deleteProduct(product.id!);
-        backendSuccess = true;
         print('✅ Deleted from backend');
       } catch (e) {
         print('⚠️ Failed to delete from backend: $e');
@@ -390,19 +386,6 @@ class DataManager {
     print('✅ Loaded ${categoryNames.length} categories from local database');
 
     return categoryNames;
-  }
-
-  /// Background sync for categories
-  Future<void> _syncCategoriesInBackground() async {
-    try {
-      List<String> backendCategories = await _apiService
-          .fetchCategories()
-          .timeout(Duration(seconds: 5), onTimeout: () => <String>[]);
-      print('✅ Backend has ${backendCategories.length} categories');
-      // Categories are derived from products, so they sync automatically
-    } catch (e) {
-      print('⚠️ Background category sync failed: $e');
-    }
   }
 
   /// Get products by category (filtered)

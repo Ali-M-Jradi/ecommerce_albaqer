@@ -33,6 +33,31 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   }
 
   Future<void> _addToCart() async {
+    // Validate stock before adding to cart
+    if (widget.product.quantityInStock <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('${widget.product.name} is currently out of stock'),
+          duration: Duration(seconds: 2),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    if (quantity > widget.product.quantityInStock) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Only ${widget.product.quantityInStock} items available in stock',
+          ),
+          duration: Duration(seconds: 2),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
     // Get the cart service from Provider
     final cartService = Provider.of<CartService>(context, listen: false);
 
@@ -125,25 +150,21 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   SizedBox(height: 8),
 
                   // Type/Category
-                  if (widget.product.type != null)
-                    Container(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.blue[100] ?? Colors.blue.shade100,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        widget.product.type.toUpperCase(),
-                        style: TextStyle(
-                          color: Colors.blue[900] ?? Colors.blue.shade900,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 12,
-                        ),
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: Colors.blue[100] ?? Colors.blue.shade100,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      widget.product.type.toUpperCase(),
+                      style: TextStyle(
+                        color: Colors.blue[900] ?? Colors.blue.shade900,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
                       ),
                     ),
+                  ),
                   SizedBox(height: 16),
 
                   // Rating and Reviews

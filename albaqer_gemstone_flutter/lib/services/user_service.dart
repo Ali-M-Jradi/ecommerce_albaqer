@@ -1,17 +1,16 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:albaqer_gemstone_flutter/models/user.dart';
+import '../config/api_config.dart';
 
 /// Service class for handling all user-related API calls to the backend
 class UserService {
-  // For Android Emulator: use 10.0.2.2 (maps to host machine's localhost)
-  final String baseUrl = 'http://10.91.89.60:3000/api';
-
   // ========== CREATE (Register) ==========
   /// Register a new user on the backend
   /// Returns the created User with its ID, or null if failed
   Future<User?> registerUser(User user) async {
     try {
+      final baseUrl = await ApiConfig.baseUrl;
       final response = await http.post(
         Uri.parse('$baseUrl/users'),
         headers: {'Content-Type': 'application/json'},
@@ -48,6 +47,7 @@ class UserService {
   /// Fetch all users from the backend
   Future<List<User>> fetchAllUsers() async {
     try {
+      final baseUrl = await ApiConfig.baseUrl;
       final response = await http.get(Uri.parse('$baseUrl/users/all'));
 
       if (response.statusCode == 200) {
@@ -83,6 +83,7 @@ class UserService {
   /// Fetch a single user by ID from the backend
   Future<User?> fetchUserById(int id) async {
     try {
+      final baseUrl = await ApiConfig.baseUrl;
       final response = await http.get(Uri.parse('$baseUrl/users/$id'));
 
       if (response.statusCode == 200) {
@@ -118,6 +119,7 @@ class UserService {
   /// Update an existing user on the backend
   Future<User?> updateUser(User user) async {
     try {
+      final baseUrl = await ApiConfig.baseUrl;
       final response = await http.put(
         Uri.parse('$baseUrl/users/${user.id}'),
         headers: {'Content-Type': 'application/json'},
@@ -157,6 +159,7 @@ class UserService {
   /// Delete a user from the backend
   Future<bool> deleteUser(int userId) async {
     try {
+      final baseUrl = await ApiConfig.baseUrl;
       final response = await http.delete(Uri.parse('$baseUrl/users/$userId'));
 
       if (response.statusCode == 200) {

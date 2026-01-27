@@ -1,6 +1,8 @@
 import 'package:albaqer_gemstone_flutter/models/cart_item.dart';
 import 'package:albaqer_gemstone_flutter/models/product.dart';
+import 'package:albaqer_gemstone_flutter/models/order_item.dart';
 import 'package:albaqer_gemstone_flutter/services/cart_service.dart';
+import 'package:albaqer_gemstone_flutter/services/order_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -576,54 +578,186 @@ class _CartScreenState extends State<CartScreen> {
   }
 
   /// PROCEED TO CHECKOUT
-  /// Handles checkout process (placeholder for now)
+  /// Creates order in database and shows confirmation
   Future<void> _proceedToCheckout(
     BuildContext context,
     CartService cartService,
   ) async {
+    // Re-validate stock availability before proceeding
+    for (var i = 0; i < cartService.cartItems.length; i++) {
+      final cartItem = cartService.cartItems[i];
+      final product = cartService.cartProducts[i];
+
+      if (product.quantityInStock <= 0) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              '${product.name} is out of stock. Please remove it from cart.',
+            ),
+            duration: Duration(seconds: 3),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
+
+      if (cartItem.quantity > product.quantityInStock) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Only ${product.quantityInStock} of ${product.name} available. Please adjust quantity.',
+            ),
+            duration: Duration(seconds: 3),
+            backgroundColor: Colors.orange,
+          ),
+        );
+        return;
+      }
+    }
+
     setState(() => _isLoading = true);
 
-    // Simulate processing
-    await Future.delayed(Duration(seconds: 1));
+    try {
+      final orderService = OrderService();
 
-    setState(() => _isLoading = false);
+      // Convert cart items to order items
+      final orderItems = cartService.cartItems.map((cartItem) {
+        final product =
+            cartService.cartProducts[cartService.cartItems.indexOf(cartItem)];
+        return OrderItem(
+          orderId: 0, // Will be set by backend
+          productId: product.id!,
+          quantity: cartItem.quantity,
+          priceAtPurchase: cartItem.priceAtAdd,
+        );
+      }).toList();
 
-    if (mounted) {
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: Row(
-            children: [
-              Icon(Icons.check_circle, color: Colors.green, size: 28),
-              SizedBox(width: 8),
-              Text('Order Placed!'),
-            ],
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Your order has been placed successfully.'),
-              SizedBox(height: 8),
-              Text(
-                'Total: \$${cartService.total.toStringAsFixed(2)}',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              Text('Items: ${cartService.totalItemsCount}'),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context); // Close dialog
-                cartService.clearAllItems(); // Clear cart
-                Navigator.pop(context); // Return to previous screen
-              },
-              child: Text('OK'),
-            ),
-          ],
-        ),
+      // Create order with cart totals and items
+      final order = await orderService.createOrder(
+        subtotal: cartService.subtotal,
+        taxAmount: cartService.tax,
+        shippingCost: cartService.shippingCost,
+        orderItems: orderItems,
+        notes: 'Order from mobile app - ${cartService.totalItemsCount} items',
       );
+
+      setState(() => _isLoading = false);
+
+      if (!mounted) return;
+
+      if (order != null) {
+        // Success - show confirmation
+        await showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) => AlertDialog(
+            title: Row(
+              children: [
+                Icon(Icons.check_circle, color: Colors.green, size: 28),
+                SizedBox(width: 8),
+                Text('Order Placed!'),
+              ],
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Your order has been placed successfully.'),
+                SizedBox(height: 12),
+                Container(
+                  padding: EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[100],
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Order Number:',
+                        style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                      ),
+                      SizedBox(height: 4),
+                      Text(
+                        order.orderNumber,
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                      Divider(height: 16),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text('Items:', style: TextStyle(fontSize: 14)),
+                          Text(
+                            '${cartService.totalItemsCount}',
+                            style: TextStyle(fontWeight: FontWeight.w600),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 4),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text('Total:', style: TextStyle(fontSize: 14)),
+                          Text(
+                            '\$${order.totalAmount.toStringAsFixed(2)}',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(height: 12),
+                Text(
+                  'You can track your order in the Profile tab.',
+                  style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context); // Close dialog
+                  cartService.clearAllItems(); // Clear cart
+                  Navigator.pop(context); // Return to previous screen
+                },
+                child: Text('OK', style: TextStyle(fontSize: 16)),
+              ),
+            ],
+          ),
+        );
+      } else {
+        // Failed to create order
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to place order. Please try again.'),
+            backgroundColor: Colors.red,
+            action: SnackBarAction(
+              label: 'Retry',
+              textColor: Colors.white,
+              onPressed: () => _proceedToCheckout(context, cartService),
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      setState(() => _isLoading = false);
+      print('❌ Checkout error: $e');
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('An error occurred. Please try again.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 }

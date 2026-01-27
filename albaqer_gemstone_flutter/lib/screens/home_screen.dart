@@ -1,7 +1,7 @@
 import 'package:albaqer_gemstone_flutter/screens/login_screen.dart';
+import 'package:albaqer_gemstone_flutter/screens/tabs_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'products_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -135,12 +135,10 @@ class _HomeScreenState extends State<HomeScreen> {
                     width: double.infinity,
                     child: ElevatedButton.icon(
                       onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => ProductsScreen(),
-                          ),
-                        );
+                        // Navigate to Shop tab (index 1)
+                        final tabsScreen = context
+                            .findAncestorStateOfType<TabsScreenState>();
+                        tabsScreen?.selectPage(1);
                       },
                       icon: Icon(Icons.shopping_bag),
                       label: Text(
