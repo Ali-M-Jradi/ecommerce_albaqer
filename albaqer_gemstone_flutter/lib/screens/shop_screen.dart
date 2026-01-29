@@ -446,9 +446,9 @@ class _ShopScreenState extends State<ShopScreen> {
                       child: Stack(
                         fit: StackFit.expand,
                         children: [
-                          product.imageUrl != null
+                          product.fullImageUrl != null
                               ? Image.network(
-                                  product.imageUrl!,
+                                  product.fullImageUrl!,
                                   fit: BoxFit.cover,
                                   errorBuilder: (context, error, stackTrace) {
                                     return const Center(

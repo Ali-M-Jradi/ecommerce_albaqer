@@ -35,7 +35,7 @@ class OrderService {
         return [];
       }
 
-      final baseUrl = await ApiConfig.baseUrl;
+      final baseUrl = ApiConfig.baseUrl;
 
       final response = await http.get(
         Uri.parse('$baseUrl/orders/my-orders'),
@@ -126,7 +126,7 @@ class OrderService {
       print('🛒 Creating order: $orderNumber');
       print('📊 Total: \$${totalAmount.toStringAsFixed(2)}');
       print('📦 Items: ${orderItems.length}');
-      final baseUrl = await ApiConfig.baseUrl;
+      final baseUrl = ApiConfig.baseUrl;
       final response = await http.post(
         Uri.parse('$baseUrl/orders'),
         headers: {
@@ -182,7 +182,7 @@ class OrderService {
   /// Fetch all orders from the backend
   Future<List<Order>> fetchAllOrders() async {
     try {
-      final baseUrl = await ApiConfig.baseUrl;
+      final baseUrl = ApiConfig.baseUrl;
       final response = await http.get(Uri.parse('$baseUrl/orders'));
 
       if (response.statusCode == 200) {
@@ -230,7 +230,7 @@ class OrderService {
   /// Fetch a single order by ID from the backend
   Future<Order?> fetchOrderById(int id) async {
     try {
-      final baseUrl = await ApiConfig.baseUrl;
+      final baseUrl = ApiConfig.baseUrl;
       final response = await http.get(Uri.parse('$baseUrl/orders/$id'));
 
       if (response.statusCode == 200) {
@@ -278,7 +278,7 @@ class OrderService {
   /// Update an existing order on the backend
   Future<Order?> updateOrder(Order order) async {
     try {
-      final baseUrl = await ApiConfig.baseUrl;
+      final baseUrl = ApiConfig.baseUrl;
       final response = await http.put(
         Uri.parse('$baseUrl/orders/${order.id}'),
         headers: {'Content-Type': 'application/json'},
@@ -330,7 +330,7 @@ class OrderService {
   /// Update order status only
   Future<bool> updateOrderStatus(int orderId, String status) async {
     try {
-      final baseUrl = await ApiConfig.baseUrl;
+      final baseUrl = ApiConfig.baseUrl;
       final response = await http.put(
         Uri.parse('$baseUrl/orders/$orderId'),
         headers: {'Content-Type': 'application/json'},
@@ -354,7 +354,7 @@ class OrderService {
   /// Delete an order from the backend
   Future<bool> deleteOrder(int orderId) async {
     try {
-      final baseUrl = await ApiConfig.baseUrl;
+      final baseUrl = ApiConfig.baseUrl;
       final response = await http.delete(Uri.parse('$baseUrl/orders/$orderId'));
 
       if (response.statusCode == 200) {

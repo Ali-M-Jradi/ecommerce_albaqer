@@ -116,13 +116,12 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               height: 300,
               width: double.infinity,
               color: Colors.grey[200],
-              child:
-                  widget.product.imageUrl != null &&
-                      widget.product.imageUrl!.isNotEmpty
+              child: widget.product.fullImageUrl != null
                   ? Image.network(
-                      widget.product.imageUrl!,
+                      widget.product.fullImageUrl!,
                       fit: BoxFit.cover,
                       errorBuilder: (context, error, stackTrace) {
+                        print('Image load error: $error');
                         return Center(
                           child: Icon(
                             Icons.diamond,

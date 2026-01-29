@@ -1,3 +1,5 @@
+import '../config/api_config.dart';
+
 class Product {
   final int? id;
   final String name;
@@ -48,6 +50,19 @@ class Product {
     this.stoneCut,
     this.stoneClarity,
   });
+
+  // Get full image URL for network images
+  String? get fullImageUrl {
+    if (imageUrl == null || imageUrl!.isEmpty) return null;
+
+    // If already a full URL, return as is
+    if (imageUrl!.startsWith('http://') || imageUrl!.startsWith('https://')) {
+      return imageUrl;
+    }
+
+    // Build full URL using ApiConfig
+    return '${ApiConfig.serverUrl}$imageUrl';
+  }
 
   // Convert Product to Map for database insertion
   Map<String, dynamic> get productMap {

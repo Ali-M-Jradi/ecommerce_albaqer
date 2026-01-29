@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const os = require('os');
+const path = require('path');
 const pool = require('./db/connection');
 const { errorHandler, notFound } = require('./middleware/errorHandler');
 
@@ -15,6 +16,9 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Serve static files (product images)
+app.use('/images', express.static(path.join(__dirname, 'public/images')));
 
 // Request logging
 app.use((req, res, next) => {
@@ -64,8 +68,16 @@ app.use('/api/products', productRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/orders', orderRoutes);
 
+// 404 handler for API routes only
+app.use((req, res, next) => {
+    if (req.path.startsWith('/api/')) {
+        notFound(req, res);
+    } else {
+        next();
+    }
+});
+
 // Error handling middleware
-app.use(notFound);
 app.use(errorHandler);
 
 // Helper function to get local IP address

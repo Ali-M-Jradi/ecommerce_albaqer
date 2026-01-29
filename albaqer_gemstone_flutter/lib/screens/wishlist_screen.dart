@@ -187,9 +187,9 @@ class _WishlistScreenState extends State<WishlistScreen> {
                       borderRadius: const BorderRadius.vertical(
                         top: Radius.circular(12),
                       ),
-                      child: product.imageUrl != null
+                      child: product.fullImageUrl != null
                           ? Image.network(
-                              product.imageUrl!,
+                              product.fullImageUrl!,
                               fit: BoxFit.cover,
                               width: double.infinity,
                               errorBuilder: (context, error, stackTrace) {

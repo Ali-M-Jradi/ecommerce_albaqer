@@ -176,9 +176,9 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
                           ),
                         );
                       },
-                      leading: product.imageUrl != null
+                      leading: product.fullImageUrl != null
                           ? Image.network(
-                              product.imageUrl!,
+                              product.fullImageUrl!,
                               width: 50,
                               height: 50,
                               fit: BoxFit.cover,

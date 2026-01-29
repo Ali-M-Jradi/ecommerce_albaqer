@@ -20,7 +20,7 @@ class AuthService {
     try {
       print('📝 Registering with backend: $email');
 
-      final baseUrl = await ApiConfig.baseUrl;
+      final baseUrl = ApiConfig.baseUrl;
 
       final response = await http
           .post(
@@ -109,7 +109,7 @@ class AuthService {
     try {
       print('🔐 Logging in with backend: $email');
 
-      final baseUrl = await ApiConfig.baseUrl;
+      final baseUrl = ApiConfig.baseUrl;
 
       final response = await http
           .post(
@@ -225,7 +225,7 @@ class AuthService {
       final token = await getToken();
       if (token == null) return false;
 
-      final baseUrl = await ApiConfig.baseUrl;
+      final baseUrl = ApiConfig.baseUrl;
 
       final response = await http.get(
         Uri.parse('$baseUrl/users/validate'),

@@ -26,7 +26,7 @@ class DataManager {
   /// Returns true if backend responds within timeout
   Future<bool> isBackendAvailable() async {
     try {
-      final healthUrl = await ApiConfig.healthUrl;
+      final healthUrl = ApiConfig.healthUrl;
       final response = await http
           .get(Uri.parse(healthUrl))
           .timeout(
