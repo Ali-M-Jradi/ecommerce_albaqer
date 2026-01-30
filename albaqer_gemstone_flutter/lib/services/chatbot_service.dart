@@ -4,9 +4,9 @@ import 'package:http/http.dart' as http;
 class ChatbotService {
   // Server IP Configuration
   // For Android Emulator: Use http://10.0.2.2:8000/api
-  // For Real Device/iOS: Use http://192.168.0.116:8000/api
-  // Your computer's IP: 192.168.0.116
-  static const String baseUrl = 'http://192.168.0.116:8000/api';
+  // For Real Device/iOS: Use http://192.168.179.1:8000/api
+  // Your computer's IP: 192.168.179.1
+  static const String baseUrl = 'http://192.168.179.1:8000/api';
 
   /// Send a chat message to the AlBaqer chatbot
   static Future<Map<String, dynamic>> sendMessage({
