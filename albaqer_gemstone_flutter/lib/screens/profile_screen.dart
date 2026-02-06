@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../config/app_theme.dart';
 import '../services/auth_service.dart';
 import '../services/order_service.dart';
 import '../models/order.dart';
@@ -62,7 +63,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),
             child: const Text('Logout'),
           ),
         ],
@@ -110,7 +111,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [Colors.black, Colors.grey.shade800],
+          colors: AppColors.primaryGradient,
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -122,9 +123,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
             width: 80,
             height: 80,
             decoration: BoxDecoration(
-              color: Colors.amber,
+              color: AppColors.secondary,
               shape: BoxShape.circle,
-              border: Border.all(color: Colors.white, width: 3),
+              border: Border.all(color: AppColors.textOnPrimary, width: 3),
             ),
             child: Center(
               child: Text(
@@ -132,7 +133,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 style: const TextStyle(
                   fontSize: 36,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  color: AppColors.textOnPrimary,
                 ),
               ),
             ),
@@ -146,7 +147,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             style: const TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
-              color: Colors.white,
+              color: AppColors.textOnPrimary,
             ),
           ),
 
@@ -157,7 +158,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             userEmail,
             style: TextStyle(
               fontSize: 14,
-              color: Colors.white.withOpacity(0.8),
+              color: AppColors.textOnPrimary.withOpacity(0.8),
             ),
           ),
         ],
@@ -180,7 +181,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               Text(
                 '${orders.length} orders',
-                style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
               ),
             ],
           ),
@@ -208,25 +209,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
       margin: const EdgeInsets.all(16),
       padding: const EdgeInsets.all(32),
       decoration: BoxDecoration(
-        color: Colors.grey[50],
+        color: AppColors.surfaceLight,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
         children: [
-          Icon(Icons.shopping_bag_outlined, size: 64, color: Colors.grey[300]),
+          Icon(Icons.shopping_bag_outlined, size: 64, color: AppColors.border),
           const SizedBox(height: 16),
           Text(
             'No orders yet',
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w600,
-              color: Colors.grey[600],
+              color: AppColors.textSecondary,
             ),
           ),
           const SizedBox(height: 8),
           Text(
             'Start shopping to see your orders here',
-            style: TextStyle(fontSize: 14, color: Colors.grey[500]),
+            style: TextStyle(fontSize: 14, color: AppColors.textLight),
           ),
         ],
       ),
@@ -238,24 +239,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
     Color statusColor;
     switch (order.status.toLowerCase()) {
       case 'delivered':
-        statusColor = Colors.green;
+        statusColor = AppColors.success;
         break;
       case 'processing':
-        statusColor = Colors.orange;
+        statusColor = AppColors.warning;
         break;
       case 'cancelled':
-        statusColor = Colors.red;
+        statusColor = AppColors.error;
         break;
       default:
-        statusColor = Colors.blue;
+        statusColor = AppColors.info;
     }
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.background,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey[200]!),
+        border: Border.all(color: AppColors.border),
       ),
       child: ListTile(
         contentPadding: const EdgeInsets.all(16),
@@ -281,7 +282,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
-                color: Colors.black,
+                color: AppColors.textPrimary,
               ),
             ),
             const SizedBox(height: 4),
@@ -308,7 +309,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 const SizedBox(width: 8),
                 Text(
                   _formatDate(order.createdAt ?? DateTime.now()),
-                  style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                  style: TextStyle(fontSize: 12, color: AppColors.textLight),
                 ),
               ],
             ),
@@ -344,7 +345,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   width: 40,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: Colors.grey[300],
+                    color: AppColors.border,
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -427,14 +428,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           Container(
                             padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
-                              color: Colors.grey[50],
+                              color: AppColors.surfaceLight,
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Text(
                               order.notes!,
                               style: TextStyle(
                                 fontSize: 14,
-                                color: Colors.grey[700],
+                                color: AppColors.textSecondary,
                               ),
                             ),
                           ),
@@ -457,7 +458,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: TextStyle(fontSize: 14, color: Colors.grey[600])),
+          Text(
+            label,
+            style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
+          ),
           Text(
             value,
             style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
@@ -525,7 +529,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         _buildActionTile(
           icon: Icons.logout,
           title: 'Logout',
-          textColor: Colors.red,
+          textColor: AppColors.error,
           onTap: _logout,
         ),
       ],
@@ -541,12 +545,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.background,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey[200]!),
+        border: Border.all(color: AppColors.border),
       ),
       child: ListTile(
-        leading: Icon(icon, color: textColor ?? Colors.black),
+        leading: Icon(icon, color: textColor ?? AppColors.textPrimary),
         title: Text(
           title,
           style: TextStyle(fontWeight: FontWeight.w600, color: textColor),

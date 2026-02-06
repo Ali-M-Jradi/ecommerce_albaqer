@@ -4,6 +4,7 @@ import 'package:albaqer_gemstone_flutter/screens/chatbot_screen.dart';
 import 'package:albaqer_gemstone_flutter/screens/wishlist_screen.dart';
 import 'package:albaqer_gemstone_flutter/services/auth_service.dart';
 import 'package:flutter/material.dart';
+import '../config/app_theme.dart';
 
 /// =======================================================================
 /// DRAWER WIDGET - Navigation Menu with Role-Based Display
@@ -67,13 +68,13 @@ class _DrawerWidgetState extends State<DrawerWidget> {
           // USER HEADER - Shows name and role
           // ========================================
           UserAccountsDrawerHeader(
-            decoration: BoxDecoration(color: Colors.black),
+            decoration: BoxDecoration(color: AppColors.primary),
             currentAccountPicture: CircleAvatar(
-              backgroundColor: Colors.white,
+              backgroundColor: AppColors.background,
               child: Icon(
                 userRole == 'admin' ? Icons.admin_panel_settings : Icons.person,
                 size: 40,
-                color: Colors.black,
+                color: AppColors.primary,
               ),
             ),
             accountName: Text(
@@ -82,14 +83,16 @@ class _DrawerWidgetState extends State<DrawerWidget> {
             ),
             accountEmail: Row(
               children: [
-                Icon(Icons.verified, size: 16, color: Colors.white),
+                Icon(Icons.verified, size: 16, color: AppColors.textOnPrimary),
                 SizedBox(width: 4),
                 Text(
                   userRole.toUpperCase(),
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
-                    color: userRole == 'admin' ? Colors.amber : Colors.white,
+                    color: userRole == 'admin'
+                        ? AppColors.secondary
+                        : AppColors.textOnPrimary,
                   ),
                 ),
               ],
@@ -134,7 +137,7 @@ class _DrawerWidgetState extends State<DrawerWidget> {
 
                 // Wishlist
                 ListTile(
-                  leading: Icon(Icons.favorite, color: Colors.red),
+                  leading: Icon(Icons.favorite, color: AppColors.favorite),
                   title: Text('My Wishlist'),
                   subtitle: Text('Saved items'),
                   onTap: () {
@@ -158,14 +161,14 @@ class _DrawerWidgetState extends State<DrawerWidget> {
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
-                        color: Colors.grey[600],
+                        color: AppColors.textSecondary,
                       ),
                     ),
                   ),
 
                   // Manage Products
                   ListTile(
-                    leading: Icon(Icons.inventory, color: Colors.amber[700]),
+                    leading: Icon(Icons.inventory, color: AppColors.secondary),
                     title: Text('Manage Products'),
                     subtitle: Text('Add, edit, delete products'),
                     onTap: () {
@@ -197,7 +200,7 @@ class _DrawerWidgetState extends State<DrawerWidget> {
                   )
                 else
                   ListTile(
-                    leading: Icon(Icons.logout, color: Colors.red),
+                    leading: Icon(Icons.logout, color: AppColors.error),
                     title: Text('Logout'),
                     onTap: _logout,
                   ),

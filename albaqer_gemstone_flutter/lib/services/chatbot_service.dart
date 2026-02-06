@@ -1,13 +1,8 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import '../config/api_config.dart';
 
 class ChatbotService {
-  // Server IP Configuration
-  // For Android Emulator: Use http://10.0.2.2:8000/api
-  // For Real Device/iOS: Use http://192.168.179.1:8000/api
-  // Your computer's IP: 192.168.179.1
-  static const String baseUrl = 'http://192.168.179.1:8000/api';
-
   /// Send a chat message to the AlBaqer chatbot
   static Future<Map<String, dynamic>> sendMessage({
     required String message,
@@ -17,7 +12,7 @@ class ChatbotService {
   }) async {
     try {
       final response = await http.post(
-        Uri.parse('$baseUrl/chat'),
+        Uri.parse('${ApiConfig.chatbotUrl}/api/chat'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'message': message,
@@ -47,7 +42,9 @@ class ChatbotService {
   }) async {
     try {
       final response = await http.get(
-        Uri.parse('$baseUrl/chat/history/$userId?limit=$limit'),
+        Uri.parse(
+          '${ApiConfig.chatbotUrl}/api/chat/history/$userId?limit=$limit',
+        ),
       );
 
       if (response.statusCode == 200) {
@@ -67,7 +64,7 @@ class ChatbotService {
   }) async {
     try {
       final response = await http.get(
-        Uri.parse('$baseUrl/chat/session/$sessionId'),
+        Uri.parse('${ApiConfig.chatbotUrl}/api/chat/session/$sessionId'),
       );
 
       if (response.statusCode == 200) {
@@ -87,7 +84,7 @@ class ChatbotService {
   static Future<void> deleteConversation({required String sessionId}) async {
     try {
       final response = await http.delete(
-        Uri.parse('$baseUrl/chat/history/$sessionId'),
+        Uri.parse('${ApiConfig.chatbotUrl}/api/chat/history/$sessionId'),
       );
 
       if (response.statusCode == 200) {
@@ -109,7 +106,7 @@ class ChatbotService {
   static Future<bool> checkHealth() async {
     try {
       final response = await http
-          .get(Uri.parse('${baseUrl.replaceAll('/api', '')}/api/health'))
+          .get(Uri.parse(ApiConfig.chatbotHealthUrl))
           .timeout(const Duration(seconds: 5));
 
       if (response.statusCode == 200) {

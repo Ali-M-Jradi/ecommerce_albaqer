@@ -4,6 +4,7 @@ import 'package:albaqer_gemstone_flutter/screens/shop_screen.dart';
 import 'package:albaqer_gemstone_flutter/screens/profile_screen.dart';
 import 'package:albaqer_gemstone_flutter/screens/cart_screen.dart';
 import 'package:albaqer_gemstone_flutter/services/cart_service.dart';
+import 'package:albaqer_gemstone_flutter/config/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -28,14 +29,14 @@ class TabsScreenState extends State<TabsScreen> {
     return Scaffold(
       appBar: AppBar(
         elevation: 2,
-        backgroundColor: Colors.black,
-        iconTheme: const IconThemeData(color: Colors.white),
+        backgroundColor: AppColors.primary,
+        iconTheme: const IconThemeData(color: AppColors.textOnPrimary),
         title: const Text(
           'AlBaqer Gemstone',
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
-            color: Colors.white,
+            color: AppColors.textOnPrimary,
           ),
         ),
         actions: [
@@ -45,7 +46,10 @@ class TabsScreenState extends State<TabsScreen> {
               return Stack(
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.shopping_cart, color: Colors.white),
+                    icon: const Icon(
+                      Icons.shopping_cart,
+                      color: AppColors.textOnPrimary,
+                    ),
                     onPressed: () {
                       Navigator.push(
                         context,
@@ -63,7 +67,7 @@ class TabsScreenState extends State<TabsScreen> {
                       child: Container(
                         padding: const EdgeInsets.all(4),
                         decoration: const BoxDecoration(
-                          color: Colors.red,
+                          color: AppColors.badge,
                           shape: BoxShape.circle,
                         ),
                         constraints: const BoxConstraints(
@@ -73,7 +77,7 @@ class TabsScreenState extends State<TabsScreen> {
                         child: Text(
                           '${cartService.itemCount}',
                           style: const TextStyle(
-                            color: Colors.white,
+                            color: AppColors.textOnPrimary,
                             fontSize: 10,
                             fontWeight: FontWeight.bold,
                           ),
@@ -104,9 +108,9 @@ class TabsScreenState extends State<TabsScreen> {
         ],
         onTap: selectPage,
         currentIndex: selectedIndex,
-        selectedItemColor: Colors.amber,
-        unselectedItemColor: Colors.grey,
-        backgroundColor: Colors.white,
+        selectedItemColor: AppColors.secondary,
+        unselectedItemColor: AppColors.textSecondary,
+        backgroundColor: AppColors.background,
       ),
     );
   }

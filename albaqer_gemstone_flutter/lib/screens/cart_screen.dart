@@ -5,6 +5,7 @@ import 'package:albaqer_gemstone_flutter/services/cart_service.dart';
 import 'package:albaqer_gemstone_flutter/services/order_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../config/app_theme.dart';
 
 /// ==================================================================================
 /// CART SCREEN - Shopping Cart UI
@@ -41,8 +42,8 @@ class _CartScreenState extends State<CartScreen> {
           'Shopping Cart',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
-        backgroundColor: Colors.black,
-        foregroundColor: Colors.white,
+        backgroundColor: AppColors.primary,
+        foregroundColor: AppColors.textOnPrimary,
         elevation: 0,
         actions: [
           // Clear cart button (only show if cart has items)
@@ -111,7 +112,7 @@ class _CartScreenState extends State<CartScreen> {
           Icon(
             Icons.shopping_cart_outlined,
             size: 120,
-            color: Colors.grey[300],
+            color: AppColors.border,
           ),
           SizedBox(height: 24),
           Text(
@@ -119,13 +120,13 @@ class _CartScreenState extends State<CartScreen> {
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
-              color: Colors.grey[700],
+              color: AppColors.textSecondary,
             ),
           ),
           SizedBox(height: 12),
           Text(
             'Add items to your cart to see them here',
-            style: TextStyle(fontSize: 16, color: Colors.grey[500]),
+            style: TextStyle(fontSize: 16, color: AppColors.textLight),
           ),
           SizedBox(height: 32),
           ElevatedButton.icon(
@@ -134,8 +135,8 @@ class _CartScreenState extends State<CartScreen> {
             label: Text('Continue Shopping'),
             style: ElevatedButton.styleFrom(
               padding: EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-              backgroundColor: Colors.black,
-              foregroundColor: Colors.white,
+              backgroundColor: AppColors.primary,
+              foregroundColor: AppColors.textOnPrimary,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
               ),
@@ -177,7 +178,7 @@ class _CartScreenState extends State<CartScreen> {
               height: 80,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(8),
-                color: Colors.grey[200],
+                color: AppColors.surface,
               ),
               child: product.fullImageUrl != null
                   ? ClipRRect(
@@ -189,12 +190,12 @@ class _CartScreenState extends State<CartScreen> {
                           return Icon(
                             Icons.image,
                             size: 40,
-                            color: Colors.grey,
+                            color: AppColors.textLight,
                           );
                         },
                       ),
                     )
-                  : Icon(Icons.image, size: 40, color: Colors.grey),
+                  : Icon(Icons.image, size: 40, color: AppColors.textLight),
             ),
             SizedBox(width: 12),
 
@@ -215,7 +216,10 @@ class _CartScreenState extends State<CartScreen> {
                   // Product Type
                   Text(
                     product.type,
-                    style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: AppColors.textSecondary,
+                    ),
                   ),
                   SizedBox(height: 4),
 
@@ -225,7 +229,7 @@ class _CartScreenState extends State<CartScreen> {
                       'Track ID: ${cartItem.trackingId!.substring(0, 8)}...',
                       style: TextStyle(
                         fontSize: 12,
-                        color: Colors.blue[700],
+                        color: AppColors.info,
                         fontFamily: 'monospace',
                       ),
                     ),
@@ -234,7 +238,10 @@ class _CartScreenState extends State<CartScreen> {
                   // Price per unit
                   Text(
                     '\$${cartItem.priceAtAdd.toStringAsFixed(2)} each',
-                    style: TextStyle(fontSize: 14, color: Colors.grey[700]),
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: AppColors.textSecondary,
+                    ),
                   ),
                   SizedBox(height: 8),
 
@@ -245,7 +252,7 @@ class _CartScreenState extends State<CartScreen> {
                       // Quantity controls
                       Container(
                         decoration: BoxDecoration(
-                          border: Border.all(color: Colors.grey[300]!),
+                          border: Border.all(color: AppColors.border),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Row(
@@ -297,7 +304,7 @@ class _CartScreenState extends State<CartScreen> {
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
-                          color: Colors.black,
+                          color: AppColors.primary,
                         ),
                       ),
                     ],
@@ -308,7 +315,7 @@ class _CartScreenState extends State<CartScreen> {
 
             // REMOVE BUTTON
             IconButton(
-              icon: Icon(Icons.close, color: Colors.red),
+              icon: Icon(Icons.close, color: AppColors.error),
               onPressed: () =>
                   _removeItem(cartService, cartItem.id!, product.name),
               tooltip: 'Remove from cart',
@@ -327,10 +334,10 @@ class _CartScreenState extends State<CartScreen> {
   Widget _buildCartSummary(BuildContext context, CartService cartService) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.background,
         boxShadow: [
           BoxShadow(
-            color: Colors.black12,
+            color: AppColors.shadow,
             blurRadius: 8,
             offset: Offset(0, -2),
           ),
@@ -355,7 +362,10 @@ class _CartScreenState extends State<CartScreen> {
               children: [
                 Text(
                   'Shipping',
-                  style: TextStyle(fontSize: 16, color: Colors.grey[700]),
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: AppColors.textSecondary,
+                  ),
                 ),
                 Text(
                   cartService.shippingCost == 0
@@ -365,8 +375,8 @@ class _CartScreenState extends State<CartScreen> {
                     fontSize: 16,
                     fontWeight: FontWeight.w500,
                     color: cartService.shippingCost == 0
-                        ? Colors.green
-                        : Colors.grey[700],
+                        ? AppColors.success
+                        : AppColors.textSecondary,
                   ),
                 ),
               ],
@@ -380,7 +390,7 @@ class _CartScreenState extends State<CartScreen> {
                   'Add \$${(100 - cartService.subtotal).toStringAsFixed(2)} more for free shipping!',
                   style: TextStyle(
                     fontSize: 12,
-                    color: Colors.amber[700],
+                    color: AppColors.secondary,
                     fontStyle: FontStyle.italic,
                   ),
                 ),
@@ -401,7 +411,7 @@ class _CartScreenState extends State<CartScreen> {
                   style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
-                    color: Colors.black,
+                    color: AppColors.primary,
                   ),
                 ),
               ],
@@ -417,8 +427,8 @@ class _CartScreenState extends State<CartScreen> {
                     ? null
                     : () => _proceedToCheckout(context, cartService),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.black,
-                  foregroundColor: Colors.white,
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: AppColors.textOnPrimary,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -429,7 +439,7 @@ class _CartScreenState extends State<CartScreen> {
                         height: 24,
                         width: 24,
                         child: CircularProgressIndicator(
-                          color: Colors.white,
+                          color: AppColors.textOnPrimary,
                           strokeWidth: 2,
                         ),
                       )
@@ -468,7 +478,7 @@ class _CartScreenState extends State<CartScreen> {
           label,
           style: TextStyle(
             fontSize: 16,
-            color: Colors.grey[700],
+            color: AppColors.textSecondary,
             fontWeight: isSubtotal ? FontWeight.w500 : FontWeight.normal,
           ),
         ),
@@ -477,7 +487,7 @@ class _CartScreenState extends State<CartScreen> {
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w500,
-            color: Colors.grey[800],
+            color: AppColors.textPrimary,
           ),
         ),
       ],
@@ -500,7 +510,7 @@ class _CartScreenState extends State<CartScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Only ${product.quantityInStock} available in stock'),
-          backgroundColor: Colors.orange,
+          backgroundColor: AppColors.warning,
           duration: Duration(seconds: 2),
         ),
       );
@@ -528,11 +538,11 @@ class _CartScreenState extends State<CartScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('$productName removed from cart'),
-          backgroundColor: Colors.red,
+          backgroundColor: AppColors.error,
           duration: Duration(seconds: 2),
           action: SnackBarAction(
             label: 'OK',
-            textColor: Colors.white,
+            textColor: AppColors.textOnPrimary,
             onPressed: () {},
           ),
         ),
@@ -560,7 +570,7 @@ class _CartScreenState extends State<CartScreen> {
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            style: TextButton.styleFrom(foregroundColor: AppColors.error),
             child: Text('Clear All'),
           ),
         ],
@@ -571,7 +581,10 @@ class _CartScreenState extends State<CartScreen> {
       await cartService.clearAllItems();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Cart cleared'), backgroundColor: Colors.red),
+          SnackBar(
+            content: Text('Cart cleared'),
+            backgroundColor: AppColors.error,
+          ),
         );
       }
     }
@@ -595,7 +608,7 @@ class _CartScreenState extends State<CartScreen> {
               '${product.name} is out of stock. Please remove it from cart.',
             ),
             duration: Duration(seconds: 3),
-            backgroundColor: Colors.red,
+            backgroundColor: AppColors.error,
           ),
         );
         return;
@@ -608,7 +621,7 @@ class _CartScreenState extends State<CartScreen> {
               'Only ${product.quantityInStock} of ${product.name} available. Please adjust quantity.',
             ),
             duration: Duration(seconds: 3),
-            backgroundColor: Colors.orange,
+            backgroundColor: AppColors.warning,
           ),
         );
         return;
@@ -653,7 +666,7 @@ class _CartScreenState extends State<CartScreen> {
           builder: (context) => AlertDialog(
             title: Row(
               children: [
-                Icon(Icons.check_circle, color: Colors.green, size: 28),
+                Icon(Icons.check_circle, color: AppColors.success, size: 28),
                 SizedBox(width: 8),
                 Text('Order Placed!'),
               ],
@@ -667,7 +680,7 @@ class _CartScreenState extends State<CartScreen> {
                 Container(
                   padding: EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Colors.grey[100],
+                    color: AppColors.surface,
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Column(
@@ -675,7 +688,10 @@ class _CartScreenState extends State<CartScreen> {
                     children: [
                       Text(
                         'Order Number:',
-                        style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: AppColors.textSecondary,
+                        ),
                       ),
                       SizedBox(height: 4),
                       Text(
@@ -716,7 +732,10 @@ class _CartScreenState extends State<CartScreen> {
                 SizedBox(height: 12),
                 Text(
                   'You can track your order in the Profile tab.',
-                  style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: AppColors.textSecondary,
+                  ),
                 ),
               ],
             ),
@@ -737,10 +756,10 @@ class _CartScreenState extends State<CartScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Failed to place order. Please try again.'),
-            backgroundColor: Colors.red,
+            backgroundColor: AppColors.error,
             action: SnackBarAction(
               label: 'Retry',
-              textColor: Colors.white,
+              textColor: AppColors.textOnPrimary,
               onPressed: () => _proceedToCheckout(context, cartService),
             ),
           ),
@@ -754,7 +773,7 @@ class _CartScreenState extends State<CartScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('An error occurred. Please try again.'),
-            backgroundColor: Colors.red,
+            backgroundColor: AppColors.error,
           ),
         );
       }

@@ -1,5 +1,7 @@
+import 'package:albaqer_gemstone_flutter/screens/gemstone_scan_screen.dart';
 import 'package:albaqer_gemstone_flutter/screens/login_screen.dart';
 import 'package:albaqer_gemstone_flutter/screens/tabs_screen.dart';
+import 'package:albaqer_gemstone_flutter/config/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -39,25 +41,23 @@ class _HomeScreenState extends State<HomeScreen> {
             Container(
               height: 220,
               width: double.infinity,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Colors.black, Colors.grey.shade800],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-              ),
+              decoration: BoxDecoration(gradient: AppTheme.primaryGradient),
               child: Padding(
                 padding: const EdgeInsets.all(24.0),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(Icons.diamond, color: Colors.white, size: 48),
+                    Icon(
+                      Icons.diamond,
+                      color: AppColors.textOnPrimary,
+                      size: 48,
+                    ),
                     SizedBox(height: 12),
                     Text(
                       'AlBaqer Gemstones',
                       style: TextStyle(
-                        color: Colors.white,
+                        color: AppColors.textOnPrimary,
                         fontSize: 28,
                         fontWeight: FontWeight.bold,
                       ),
@@ -65,7 +65,10 @@ class _HomeScreenState extends State<HomeScreen> {
                     SizedBox(height: 8),
                     Text(
                       'Premium Jewelry Collection',
-                      style: TextStyle(color: Colors.white70, fontSize: 16),
+                      style: TextStyle(
+                        color: AppColors.textOnPrimary.withOpacity(0.7),
+                        fontSize: 16,
+                      ),
                     ),
                   ],
                 ),
@@ -82,12 +85,16 @@ class _HomeScreenState extends State<HomeScreen> {
                     width: double.infinity,
                     padding: EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Colors.grey.shade100,
+                      color: AppColors.surfaceLight,
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Row(
                       children: [
-                        Icon(Icons.waving_hand, color: Colors.orange, size: 24),
+                        Icon(
+                          Icons.waving_hand,
+                          color: AppColors.accent,
+                          size: 24,
+                        ),
                         SizedBox(width: 12),
                         Expanded(
                           child: Text(
@@ -115,7 +122,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     'AlBaqer Gemstones offers a curated collection of premium jewelry featuring the finest gemstones. From elegant rings to stunning necklaces, each piece is crafted with precision and care.',
                     style: TextStyle(
                       fontSize: 15,
-                      color: Colors.grey.shade700,
+                      color: AppColors.textSecondary,
                       height: 1.5,
                     ),
                   ),
@@ -124,7 +131,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     'Explore our collection and discover timeless pieces that celebrate beauty and craftsmanship.',
                     style: TextStyle(
                       fontSize: 15,
-                      color: Colors.grey.shade700,
+                      color: AppColors.textSecondary,
                       height: 1.5,
                     ),
                   ),
@@ -148,6 +155,32 @@ class _HomeScreenState extends State<HomeScreen> {
                       style: ElevatedButton.styleFrom(
                         padding: EdgeInsets.symmetric(vertical: 16),
                         backgroundColor: Colors.black,
+                        foregroundColor: Colors.white,
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 12),
+
+                  // Gemstone Scanner Button - NEW FEATURE!
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => GemstoneScanScreen(),
+                          ),
+                        );
+                      },
+                      icon: Icon(Icons.camera_alt),
+                      label: Text(
+                        'Scan & Identify Gemstone',
+                        style: TextStyle(fontSize: 16),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        padding: EdgeInsets.symmetric(vertical: 16),
+                        backgroundColor: Colors.purple,
                         foregroundColor: Colors.white,
                       ),
                     ),

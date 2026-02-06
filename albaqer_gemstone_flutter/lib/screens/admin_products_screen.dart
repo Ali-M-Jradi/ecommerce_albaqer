@@ -3,6 +3,7 @@ import '../models/product.dart';
 import '../services/product_service.dart';
 import '../services/data_manager.dart';
 import 'product_detail_screen.dart';
+import '../config/app_theme.dart';
 
 /// =======================================================================
 /// ADMIN PRODUCTS SCREEN - Simple Product Management
@@ -72,7 +73,7 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            style: TextButton.styleFrom(foregroundColor: AppColors.error),
             child: Text('Delete'),
           ),
         ],
@@ -97,7 +98,7 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('${product.name} deleted successfully'),
-            backgroundColor: Colors.green,
+            backgroundColor: AppColors.success,
           ),
         );
       }
@@ -106,7 +107,7 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error deleting product: $e'),
-            backgroundColor: Colors.red,
+            backgroundColor: AppColors.error,
           ),
         );
       }
@@ -128,8 +129,8 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Manage Products'),
-        backgroundColor: Colors.black,
-        foregroundColor: Colors.white,
+        backgroundColor: AppColors.primary,
+        foregroundColor: AppColors.textOnPrimary,
       ),
       body: isLoading
           ? Center(child: CircularProgressIndicator())
@@ -141,12 +142,15 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
                   Icon(
                     Icons.inventory_2_outlined,
                     size: 80,
-                    color: Colors.grey,
+                    color: AppColors.textSecondary,
                   ),
                   SizedBox(height: 16),
                   Text(
                     'No products yet',
-                    style: TextStyle(fontSize: 18, color: Colors.grey),
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: AppColors.textSecondary,
+                    ),
                   ),
                   SizedBox(height: 24),
                   ElevatedButton.icon(
@@ -197,7 +201,7 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
                           Text(
                             '\$${product.basePrice.toStringAsFixed(2)}',
                             style: TextStyle(
-                              color: Colors.green,
+                              color: AppColors.success,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -208,7 +212,7 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
                         ],
                       ),
                       trailing: IconButton(
-                        icon: Icon(Icons.delete, color: Colors.red),
+                        icon: Icon(Icons.delete, color: AppColors.error),
                         onPressed: () => _deleteProduct(product),
                       ),
                     ),
@@ -218,8 +222,8 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
             ),
       floatingActionButton: FloatingActionButton(
         onPressed: _showAddProductDialog,
-        backgroundColor: Colors.black,
-        child: Icon(Icons.add, color: Colors.white),
+        backgroundColor: AppColors.primary,
+        child: Icon(Icons.add, color: AppColors.textOnPrimary),
       ),
     );
   }
@@ -351,7 +355,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('${newProduct.name} added successfully!'),
-            backgroundColor: Colors.green,
+            backgroundColor: AppColors.success,
           ),
         );
 
@@ -366,7 +370,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error adding product: $e'),
-            backgroundColor: Colors.red,
+            backgroundColor: AppColors.error,
           ),
         );
       }
@@ -378,8 +382,8 @@ class _AddProductScreenState extends State<AddProductScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Add New Product'),
-        backgroundColor: Colors.black,
-        foregroundColor: Colors.white,
+        backgroundColor: AppColors.primary,
+        foregroundColor: AppColors.textOnPrimary,
       ),
       body: SingleChildScrollView(
         padding: EdgeInsets.all(16),
@@ -602,15 +606,15 @@ class _AddProductScreenState extends State<AddProductScreen> {
                 onPressed: isLoading ? null : _submitForm,
                 style: ElevatedButton.styleFrom(
                   padding: EdgeInsets.symmetric(vertical: 16),
-                  backgroundColor: Colors.black,
-                  foregroundColor: Colors.white,
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: AppColors.textOnPrimary,
                 ),
                 child: isLoading
                     ? SizedBox(
                         height: 20,
                         width: 20,
                         child: CircularProgressIndicator(
-                          color: Colors.white,
+                          color: AppColors.textOnPrimary,
                           strokeWidth: 2,
                         ),
                       )

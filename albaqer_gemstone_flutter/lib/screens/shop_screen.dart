@@ -5,6 +5,7 @@ import '../models/product.dart';
 import '../services/data_manager.dart';
 import '../services/wishlist_service.dart';
 import 'product_detail_screen.dart';
+import '../config/app_theme.dart';
 
 /// Unified Shop Screen - Combines product browsing, search, and filters
 /// Provides clean UX with persistent search and category filters
@@ -71,10 +72,10 @@ class _ShopScreenState extends State<ShopScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Failed to load products'),
-            backgroundColor: Colors.red,
+            backgroundColor: AppColors.error,
             action: SnackBarAction(
               label: 'Retry',
-              textColor: Colors.white,
+              textColor: AppColors.textOnPrimary,
               onPressed: _loadData,
             ),
           ),
@@ -171,7 +172,7 @@ class _ShopScreenState extends State<ShopScreen> {
   Widget _buildSearchBar() {
     return Container(
       padding: const EdgeInsets.all(16),
-      color: Colors.white,
+      color: AppColors.background,
       child: Column(
         children: [
           // Search TextField
@@ -179,7 +180,10 @@ class _ShopScreenState extends State<ShopScreen> {
             controller: _searchController,
             decoration: InputDecoration(
               hintText: 'Search gemstones, rings, necklaces...',
-              prefixIcon: const Icon(Icons.search, color: Colors.grey),
+              prefixIcon: const Icon(
+                Icons.search,
+                color: AppColors.textSecondary,
+              ),
               suffixIcon: _searchController.text.isNotEmpty
                   ? IconButton(
                       icon: const Icon(Icons.clear),
@@ -190,7 +194,7 @@ class _ShopScreenState extends State<ShopScreen> {
                     )
                   : null,
               filled: true,
-              fillColor: Colors.grey[100],
+              fillColor: AppColors.surface,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide.none,
@@ -212,7 +216,7 @@ class _ShopScreenState extends State<ShopScreen> {
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12),
                   decoration: BoxDecoration(
-                    color: Colors.grey[100],
+                    color: AppColors.surface,
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: DropdownButtonHideUnderline(
@@ -254,13 +258,15 @@ class _ShopScreenState extends State<ShopScreen> {
               // Filter Toggle Button
               Container(
                 decoration: BoxDecoration(
-                  color: _showFilters ? Colors.black : Colors.grey[100],
+                  color: _showFilters ? AppColors.primary : AppColors.surface,
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: IconButton(
                   icon: Icon(
                     Icons.filter_list,
-                    color: _showFilters ? Colors.white : Colors.black,
+                    color: _showFilters
+                        ? AppColors.textOnPrimary
+                        : AppColors.primary,
                   ),
                   onPressed: () {
                     setState(() => _showFilters = !_showFilters);
@@ -291,7 +297,7 @@ class _ShopScreenState extends State<ShopScreen> {
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      color: Colors.grey[50],
+      color: AppColors.surface,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -313,13 +319,13 @@ class _ShopScreenState extends State<ShopScreen> {
                           vertical: 2,
                         ),
                         decoration: BoxDecoration(
-                          color: Colors.black,
+                          color: AppColors.primary,
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Text(
                           '${_selectedCategories.length}',
                           style: const TextStyle(
-                            color: Colors.white,
+                            color: AppColors.textOnPrimary,
                             fontSize: 12,
                             fontWeight: FontWeight.bold,
                           ),
@@ -353,7 +359,9 @@ class _ShopScreenState extends State<ShopScreen> {
                 label: Text(
                   category.toUpperCase(),
                   style: TextStyle(
-                    color: isSelected ? Colors.white : Colors.black,
+                    color: isSelected
+                        ? AppColors.textOnPrimary
+                        : AppColors.primary,
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
                   ),
@@ -369,11 +377,11 @@ class _ShopScreenState extends State<ShopScreen> {
                   });
                   _applyFilters();
                 },
-                selectedColor: Colors.black,
-                backgroundColor: Colors.white,
-                checkmarkColor: Colors.white,
+                selectedColor: AppColors.primary,
+                backgroundColor: AppColors.background,
+                checkmarkColor: AppColors.textOnPrimary,
                 side: BorderSide(
-                  color: isSelected ? Colors.black : Colors.grey[300]!,
+                  color: isSelected ? AppColors.primary : AppColors.border,
                 ),
               );
             }).toList(),
@@ -415,11 +423,11 @@ class _ShopScreenState extends State<ShopScreen> {
       },
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.background,
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: AppColors.primary.withOpacity(0.05),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -434,7 +442,7 @@ class _ShopScreenState extends State<ShopScreen> {
                 Expanded(
                   child: Container(
                     decoration: BoxDecoration(
-                      color: Colors.grey[100],
+                      color: AppColors.surface,
                       borderRadius: const BorderRadius.vertical(
                         top: Radius.circular(12),
                       ),
@@ -455,7 +463,7 @@ class _ShopScreenState extends State<ShopScreen> {
                                       child: Icon(
                                         Icons.diamond,
                                         size: 40,
-                                        color: Colors.grey,
+                                        color: AppColors.textSecondary,
                                       ),
                                     );
                                   },
@@ -464,19 +472,19 @@ class _ShopScreenState extends State<ShopScreen> {
                                   child: Icon(
                                     Icons.diamond,
                                     size: 40,
-                                    color: Colors.grey,
+                                    color: AppColors.textSecondary,
                                   ),
                                 ),
                           // Out of stock overlay
                           if (product.quantityInStock == 0)
                             Container(
-                              color: Colors.black.withOpacity(0.6),
+                              color: AppColors.primary.withOpacity(0.6),
                               child: const Center(
                                 child: Text(
                                   'OUT OF\nSTOCK',
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
-                                    color: Colors.white,
+                                    color: AppColors.textOnPrimary,
                                     fontWeight: FontWeight.bold,
                                     fontSize: 16,
                                   ),
@@ -502,7 +510,7 @@ class _ShopScreenState extends State<ShopScreen> {
                           vertical: 4,
                         ),
                         decoration: BoxDecoration(
-                          color: Colors.amber.withOpacity(0.2),
+                          color: AppColors.secondary.withOpacity(0.2),
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: Text(
@@ -510,7 +518,7 @@ class _ShopScreenState extends State<ShopScreen> {
                           style: const TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.bold,
-                            color: Colors.orange,
+                            color: AppColors.accent,
                           ),
                         ),
                       ),
@@ -536,7 +544,7 @@ class _ShopScreenState extends State<ShopScreen> {
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
-                          color: Colors.black,
+                          color: AppColors.primary,
                         ),
                       ),
 
@@ -550,17 +558,17 @@ class _ShopScreenState extends State<ShopScreen> {
                         ),
                         decoration: BoxDecoration(
                           color: product.quantityInStock == 0
-                              ? Colors.red.withOpacity(0.1)
+                              ? AppColors.stockLow
                               : product.quantityInStock <= 5
-                              ? Colors.orange.withOpacity(0.1)
-                              : Colors.green.withOpacity(0.1),
+                              ? AppColors.stockMedium
+                              : AppColors.stockHigh,
                           borderRadius: BorderRadius.circular(4),
                           border: Border.all(
                             color: product.quantityInStock == 0
-                                ? Colors.red
+                                ? AppColors.stockLowText
                                 : product.quantityInStock <= 5
-                                ? Colors.orange
-                                : Colors.green,
+                                ? AppColors.stockMediumText
+                                : AppColors.stockHighText,
                             width: 1,
                           ),
                         ),
@@ -575,10 +583,10 @@ class _ShopScreenState extends State<ShopScreen> {
                                   : Icons.check_circle,
                               size: 12,
                               color: product.quantityInStock == 0
-                                  ? Colors.red
+                                  ? AppColors.stockLowText
                                   : product.quantityInStock <= 5
-                                  ? Colors.orange
-                                  : Colors.green,
+                                  ? AppColors.stockMediumText
+                                  : AppColors.stockHighText,
                             ),
                             const SizedBox(width: 4),
                             Text(
@@ -590,10 +598,10 @@ class _ShopScreenState extends State<ShopScreen> {
                               style: TextStyle(
                                 fontSize: 11,
                                 color: product.quantityInStock == 0
-                                    ? Colors.red
+                                    ? AppColors.stockLowText
                                     : product.quantityInStock <= 5
-                                    ? Colors.orange
-                                    : Colors.green,
+                                    ? AppColors.stockMediumText
+                                    : AppColors.stockHighText,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
@@ -636,18 +644,20 @@ class _ShopScreenState extends State<ShopScreen> {
                     child: Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: AppColors.background,
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
+                            color: AppColors.primary.withOpacity(0.1),
                             blurRadius: 4,
                           ),
                         ],
                       ),
                       child: Icon(
                         isInWishlist ? Icons.favorite : Icons.favorite_border,
-                        color: isInWishlist ? Colors.red : Colors.grey,
+                        color: isInWishlist
+                            ? AppColors.favorite
+                            : AppColors.textSecondary,
                         size: 20,
                       ),
                     ),
@@ -673,17 +683,17 @@ class _ShopScreenState extends State<ShopScreen> {
                   ? Icons.search_off
                   : Icons.shopping_bag_outlined,
               size: 80,
-              color: Colors.grey[300],
+              color: AppColors.textLight,
             ),
             const SizedBox(height: 16),
             Text(
               _searchController.text.isNotEmpty
                   ? 'No products found'
                   : 'No products available',
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
-                color: Colors.grey[600],
+                color: AppColors.textSecondary,
               ),
             ),
             const SizedBox(height: 8),
@@ -691,7 +701,7 @@ class _ShopScreenState extends State<ShopScreen> {
               _searchController.text.isNotEmpty
                   ? 'Try different keywords or filters'
                   : 'Check back later for new arrivals',
-              style: TextStyle(fontSize: 14, color: Colors.grey[500]),
+              style: const TextStyle(fontSize: 14, color: AppColors.textLight),
               textAlign: TextAlign.center,
             ),
             if (_selectedCategories.isNotEmpty ||
@@ -703,8 +713,8 @@ class _ShopScreenState extends State<ShopScreen> {
                   icon: const Icon(Icons.clear_all),
                   label: const Text('Clear Filters'),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.black,
-                    foregroundColor: Colors.white,
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: AppColors.textOnPrimary,
                     padding: const EdgeInsets.symmetric(
                       horizontal: 24,
                       vertical: 12,

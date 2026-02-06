@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../models/product.dart';
 import '../services/cart_service.dart';
 import 'cart_screen.dart';
+import '../config/app_theme.dart';
 
 class ProductDetailScreen extends StatefulWidget {
   final Product product;
@@ -39,7 +40,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         SnackBar(
           content: Text('${widget.product.name} is currently out of stock'),
           duration: Duration(seconds: 2),
-          backgroundColor: Colors.red,
+          backgroundColor: AppColors.error,
         ),
       );
       return;
@@ -52,7 +53,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             'Only ${widget.product.quantityInStock} items available in stock',
           ),
           duration: Duration(seconds: 2),
-          backgroundColor: Colors.orange,
+          backgroundColor: AppColors.warning,
         ),
       );
       return;
@@ -74,7 +75,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           SnackBar(
             content: Text('Added ${widget.product.name} (x$quantity) to cart'),
             duration: Duration(seconds: 2),
-            backgroundColor: Colors.green,
+            backgroundColor: AppColors.success,
             action: SnackBarAction(
               label: 'VIEW CART',
               textColor: Colors.white,
@@ -96,7 +97,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           SnackBar(
             content: Text('Could not add to cart. Check stock availability.'),
             duration: Duration(seconds: 2),
-            backgroundColor: Colors.red,
+            backgroundColor: AppColors.error,
           ),
         );
       }
@@ -115,7 +116,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             Container(
               height: 300,
               width: double.infinity,
-              color: Colors.grey[200],
+              color: AppColors.surface,
               child: widget.product.fullImageUrl != null
                   ? Image.network(
                       widget.product.fullImageUrl!,
@@ -126,13 +127,17 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                           child: Icon(
                             Icons.diamond,
                             size: 100,
-                            color: Colors.grey,
+                            color: AppColors.textSecondary,
                           ),
                         );
                       },
                     )
                   : Center(
-                      child: Icon(Icons.diamond, size: 100, color: Colors.grey),
+                      child: Icon(
+                        Icons.diamond,
+                        size: 100,
+                        color: AppColors.textSecondary,
+                      ),
                     ),
             ),
 
@@ -169,7 +174,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   // Rating and Reviews
                   Row(
                     children: [
-                      Icon(Icons.star, color: Colors.amber, size: 24),
+                      Icon(Icons.star, color: AppColors.rating, size: 24),
                       SizedBox(width: 4),
                       Text(
                         widget.product.rating.toStringAsFixed(1),
@@ -181,7 +186,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       SizedBox(width: 8),
                       Text(
                         '(${widget.product.totalReviews} reviews)',
-                        style: TextStyle(fontSize: 14, color: Colors.grey),
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: AppColors.textSecondary,
+                        ),
                       ),
                     ],
                   ),
@@ -193,7 +201,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     style: TextStyle(
                       fontSize: 32,
                       fontWeight: FontWeight.bold,
-                      color: Colors.green[700],
+                      color: AppColors.success,
                     ),
                   ),
                   SizedBox(height: 8),
@@ -206,8 +214,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                             ? Icons.check_circle
                             : Icons.cancel,
                         color: widget.product.quantityInStock > 0
-                            ? Colors.green
-                            : Colors.red,
+                            ? AppColors.success
+                            : AppColors.error,
                         size: 20,
                       ),
                       SizedBox(width: 8),
@@ -218,8 +226,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                         style: TextStyle(
                           fontSize: 14,
                           color: widget.product.quantityInStock > 0
-                              ? Colors.green[700]
-                              : Colors.red[700],
+                              ? AppColors.success
+                              : AppColors.error,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -244,7 +252,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                         : 'No description available',
                     style: TextStyle(
                       fontSize: 16,
-                      color: Colors.grey[800],
+                      color: AppColors.textPrimary,
                       height: 1.5,
                     ),
                   ),
@@ -281,7 +289,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w600,
-                                  color: Colors.amber[800],
+                                  color: AppColors.secondary,
                                 ),
                               ),
                               SizedBox(height: 8),
@@ -323,7 +331,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w600,
-                                  color: Colors.amber[800],
+                                  color: AppColors.secondary,
                                 ),
                               ),
                               SizedBox(height: 8),
@@ -369,7 +377,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                         onPressed: _decrementQuantity,
                         icon: Icon(Icons.remove_circle_outline),
                         iconSize: 32,
-                        color: Colors.grey[700],
+                        color: AppColors.textSecondary,
                       ),
                       SizedBox(width: 16),
                       Text(
@@ -384,7 +392,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                         onPressed: _incrementQuantity,
                         icon: Icon(Icons.add_circle_outline),
                         iconSize: 32,
-                        color: Colors.amber[700],
+                        color: AppColors.secondary,
                       ),
                     ],
                   ),
@@ -394,7 +402,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   if (widget.product.createdAt != null)
                     Text(
                       'Listed on: ${widget.product.createdAt!.day}/${widget.product.createdAt!.month}/${widget.product.createdAt!.year}',
-                      style: TextStyle(fontSize: 12, color: Colors.grey),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: AppColors.textSecondary,
+                      ),
                     ),
                   SizedBox(height: 80), // Space for bottom button
                 ],
@@ -461,7 +472,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               label,
               style: TextStyle(
                 fontSize: 14,
-                color: Colors.grey[600],
+                color: AppColors.textSecondary,
                 fontWeight: FontWeight.w500,
               ),
             ),

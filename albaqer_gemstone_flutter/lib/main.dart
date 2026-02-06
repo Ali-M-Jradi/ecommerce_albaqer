@@ -5,6 +5,7 @@ import 'package:albaqer_gemstone_flutter/services/auth_service.dart';
 import 'package:albaqer_gemstone_flutter/services/cart_service.dart';
 import 'package:albaqer_gemstone_flutter/services/wishlist_service.dart';
 import 'package:albaqer_gemstone_flutter/config/api_config.dart';
+import 'package:albaqer_gemstone_flutter/config/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -45,26 +46,7 @@ class AlBaqerMain extends StatelessWidget {
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          primaryColor: Colors.black,
-          scaffoldBackgroundColor: Colors.white,
-          colorScheme: ColorScheme.light(
-            primary: Colors.black,
-            secondary: Colors.amber,
-            error: Colors.red,
-          ),
-          appBarTheme: AppBarTheme(
-            backgroundColor: Colors.black,
-            foregroundColor: Colors.white,
-            elevation: 0,
-          ),
-          elevatedButtonTheme: ElevatedButtonThemeData(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.black,
-              foregroundColor: Colors.white,
-            ),
-          ),
-        ),
+        theme: AppTheme.lightTheme,
         // EXPLAIN IN PRESENTATION: Using FutureBuilder to check authentication status
         // before deciding which screen to show
         home: FutureBuilder<bool>(

@@ -1,27 +1,40 @@
 /// Static API Configuration
-/// Update the _baseIp when your server IP changes
+/// Update the _serverIp when your server IP changes
 class ApiConfig {
-  // ⚙️ CONFIGURATION - Change this IP address when needed
-  static const String _baseIp = '192.168.179.1';
-  static const String _port = '3000';
+  // ⚙️ CONFIGURATION - Server IP (both services on same machine)
+  static const String _serverIp = '192.168.0.120';
 
-  /// Get base URL for API calls
-  static String get baseUrl => 'http://$_baseIp:$_port/api';
+  // Backend API (products, cart, orders)
+  static const String _backendPort = '3000';
 
-  /// Get server URL (without /api) for static files like images
-  static String get serverUrl => 'http://$_baseIp:$_port';
+  // Chatbot API (AI assistant)
+  static const String _chatbotPort = '8000';
 
-  /// Get health check URL
-  static String get healthUrl => 'http://$_baseIp:$_port/api/health';
+  /// Backend API (products, cart, orders, auth)
+  static String get baseUrl => 'http://$_serverIp:$_backendPort/api';
+
+  /// Chatbot API (AI chat) - no /api suffix, endpoints include it
+  static String get chatbotUrl => 'http://$_serverIp:$_chatbotPort';
+
+  /// Server URL for static files (images, etc)
+  static String get serverUrl => 'http://$_serverIp:$_backendPort';
+
+  /// Health check URLs
+  static String get healthUrl => 'http://$_serverIp:$_backendPort/api/health';
+  static String get chatbotHealthUrl =>
+      'http://$_serverIp:$_chatbotPort/api/health';
 
   /// Print current configuration
   static void printConfig() {
     print('═══════════════════════════════════════════════════════');
-    print('📱 Backend Configuration');
+    print('📱 Server Configuration');
     print('═══════════════════════════════════════════════════════');
-    print('🌐 Backend IP: $_baseIp');
-    print('🔌 Port: $_port');
-    print('📍 Base URL: $baseUrl');
+    print('🌐 Server IP: $_serverIp');
+    print('🛒 Backend Port: $_backendPort');
+    print('💬 Chatbot Port: $_chatbotPort');
+    print('═══════════════════════════════════════════════════════');
+    print('📍 Backend URL: $baseUrl');
+    print('🤖 Chatbot URL: $chatbotUrl');
     print('🖼️  Server URL: $serverUrl');
     print('═══════════════════════════════════════════════════════');
   }

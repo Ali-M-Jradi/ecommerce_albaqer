@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
+import '../config/app_theme.dart';
 import 'tabs_screen.dart';
 
 /// Register Screen - New User Sign Up
@@ -169,13 +170,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 const SizedBox(height: 20),
 
                 // Header
-                Icon(Icons.person_add, size: 80, color: Colors.amber),
+                Icon(Icons.person_add, size: 80, color: AppColors.secondary),
                 const SizedBox(height: 16),
 
                 Text(
                   'Join Us',
                   style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                    color: Colors.black,
+                    color: AppColors.textPrimary,
                     fontWeight: FontWeight.bold,
                   ),
                   textAlign: TextAlign.center,
@@ -184,9 +185,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                 Text(
                   'Create your account',
-                  style: Theme.of(
-                    context,
-                  ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 32),
@@ -201,11 +202,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   decoration: InputDecoration(
                     labelText: 'Full Name',
                     hintText: 'Enter your full name',
-                    prefixIcon: const Icon(Icons.person, color: Colors.amber),
+                    prefixIcon: const Icon(
+                      Icons.person,
+                      color: AppColors.secondary,
+                    ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                       borderSide: const BorderSide(
-                        color: Colors.amber,
+                        color: AppColors.secondary,
                         width: 2,
                       ),
                     ),
@@ -226,11 +230,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   decoration: InputDecoration(
                     labelText: 'Email',
                     hintText: 'Enter your email',
-                    prefixIcon: const Icon(Icons.email, color: Colors.amber),
+                    prefixIcon: const Icon(
+                      Icons.email,
+                      color: AppColors.secondary,
+                    ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                       borderSide: const BorderSide(
-                        color: Colors.amber,
+                        color: AppColors.secondary,
                         width: 2,
                       ),
                     ),
@@ -251,13 +258,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   decoration: InputDecoration(
                     labelText: 'Password',
                     hintText: 'Create a password',
-                    prefixIcon: const Icon(Icons.lock, color: Colors.amber),
+                    prefixIcon: const Icon(
+                      Icons.lock,
+                      color: AppColors.secondary,
+                    ),
                     suffixIcon: IconButton(
                       icon: Icon(
                         _obscurePassword
                             ? Icons.visibility
                             : Icons.visibility_off,
-                        color: Colors.amber,
+                        color: AppColors.secondary,
                       ),
                       onPressed: () {
                         setState(() => _obscurePassword = !_obscurePassword);
@@ -266,7 +276,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                       borderSide: const BorderSide(
-                        color: Colors.amber,
+                        color: AppColors.secondary,
                         width: 2,
                       ),
                     ),
@@ -289,14 +299,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     hintText: 'Re-enter your password',
                     prefixIcon: const Icon(
                       Icons.lock_outline,
-                      color: Colors.amber,
+                      color: AppColors.secondary,
                     ),
                     suffixIcon: IconButton(
                       icon: Icon(
                         _obscureConfirmPassword
                             ? Icons.visibility
                             : Icons.visibility_off,
-                        color: Colors.amber,
+                        color: AppColors.secondary,
                       ),
                       onPressed: () {
                         setState(
@@ -308,7 +318,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                       borderSide: const BorderSide(
-                        color: Colors.amber,
+                        color: AppColors.secondary,
                         width: 2,
                       ),
                     ),
@@ -327,18 +337,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: Colors.red[50],
+                      color: AppColors.error.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.red[200]!),
+                      border: Border.all(
+                        color: AppColors.error.withOpacity(0.3),
+                      ),
                     ),
                     child: Row(
                       children: [
-                        Icon(Icons.error_outline, color: Colors.red[700]),
+                        Icon(Icons.error_outline, color: AppColors.error),
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
                             _errorMessage!,
-                            style: TextStyle(color: Colors.red[700]),
+                            style: TextStyle(color: AppColors.error),
                           ),
                         ),
                       ],
@@ -352,8 +364,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ElevatedButton(
                   onPressed: _isLoading ? null : _handleRegister,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.amber,
-                    foregroundColor: Colors.black,
+                    backgroundColor: AppColors.secondary,
+                    foregroundColor: AppColors.textPrimary,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -367,7 +379,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
                             valueColor: AlwaysStoppedAnimation<Color>(
-                              Colors.black,
+                              AppColors.textPrimary,
                             ),
                           ),
                         )
@@ -386,7 +398,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   children: [
                     Text(
                       'Already have an account? ',
-                      style: TextStyle(color: Colors.grey[600]),
+                      style: TextStyle(color: AppColors.textSecondary),
                     ),
                     TextButton(
                       onPressed: () {
@@ -394,7 +406,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         Navigator.pop(context);
                       },
                       style: TextButton.styleFrom(
-                        foregroundColor: Colors.amber,
+                        foregroundColor: AppColors.secondary,
                       ),
                       child: const Text(
                         'Login',
