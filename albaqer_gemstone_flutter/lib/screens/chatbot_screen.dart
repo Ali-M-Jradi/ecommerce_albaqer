@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../config/app_theme.dart';
 import '../services/chatbot_service.dart';
 
 class ChatbotScreen extends StatefulWidget {
@@ -115,7 +116,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: isError ? Colors.red : Colors.green,
+        backgroundColor: isError ? AppColors.error : AppColors.success,
         duration: const Duration(seconds: 3),
       ),
     );
@@ -137,7 +138,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
           IconButton(
             icon: Icon(
               _isConnected ? Icons.cloud_done : Icons.cloud_off,
-              color: _isConnected ? Colors.green : Colors.red,
+              color: _isConnected ? AppColors.success : AppColors.error,
             ),
             onPressed: _checkConnection,
             tooltip: _isConnected ? 'Connected' : 'Disconnected',
@@ -187,11 +188,11 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(8),
-              color: Colors.orange,
+              color: AppColors.warning,
               child: const Text(
                 '⚠️ Not connected to chatbot server. Make sure the API is running.',
                 textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.white),
+                style: TextStyle(color: AppColors.textOnPrimary),
               ),
             ),
 
@@ -223,7 +224,10 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                     child: CircularProgressIndicator(strokeWidth: 2),
                   ),
                   SizedBox(width: 8),
-                  Text('Thinking...', style: TextStyle(color: Colors.grey)),
+                  Text(
+                    'Thinking...',
+                    style: TextStyle(color: AppColors.textSecondary),
+                  ),
                 ],
               ),
             ),
@@ -231,10 +235,10 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
           // Input area
           Container(
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: AppColors.background,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.grey.withOpacity(0.2),
+                  color: AppColors.textSecondary.withOpacity(0.2),
                   spreadRadius: 1,
                   blurRadius: 3,
                   offset: const Offset(0, -1),
@@ -254,7 +258,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                         borderSide: BorderSide.none,
                       ),
                       filled: true,
-                      fillColor: Colors.grey[100],
+                      fillColor: AppColors.surface,
                       contentPadding: const EdgeInsets.symmetric(
                         horizontal: 16,
                         vertical: 12,
@@ -293,10 +297,10 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
         children: [
           if (!isUser) ...[
             CircleAvatar(
-              backgroundColor: isError ? Colors.red : Colors.purple,
+              backgroundColor: isError ? AppColors.error : AppColors.info,
               child: Icon(
                 isError ? Icons.error_outline : Icons.diamond,
-                color: Colors.white,
+                color: AppColors.textOnPrimary,
                 size: 20,
               ),
             ),
@@ -309,14 +313,29 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                   : CrossAxisAlignment.start,
               children: [
                 Container(
-                  padding: const EdgeInsets.all(12),
+                  constraints: BoxConstraints(
+                    maxWidth: MediaQuery.of(context).size.width * 0.75,
+                  ),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 10,
+                  ),
                   decoration: BoxDecoration(
                     color: isUser
                         ? Theme.of(context).primaryColor
                         : isError
-                        ? Colors.red.shade50
-                        : Colors.grey.shade100,
+                        ? AppColors.error.withOpacity(0.1)
+                        : AppColors.surface,
                     borderRadius: BorderRadius.circular(16),
+                    boxShadow: isUser
+                        ? []
+                        : [
+                            BoxShadow(
+                              color: AppColors.textSecondary.withOpacity(0.1),
+                              blurRadius: 4,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -328,25 +347,19 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                             '🤖 ${_formatAgentName(message.routedTo!)}',
                             style: TextStyle(
                               fontSize: 10,
-                              color: Colors.grey.shade600,
+                              color: AppColors.textSecondary,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
                         ),
-                      Text(
-                        message.content,
-                        style: TextStyle(
-                          color: isUser ? Colors.white : Colors.black87,
-                          fontSize: 15,
-                        ),
-                      ),
+                      _buildFormattedMessage(message.content, isUser, isError),
                     ],
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   _formatTime(message.timestamp),
-                  style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
+                  style: TextStyle(fontSize: 11, color: AppColors.textLight),
                 ),
               ],
             ),
@@ -355,10 +368,225 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
             const SizedBox(width: 8),
             CircleAvatar(
               backgroundColor: Theme.of(context).primaryColor,
-              child: const Icon(Icons.person, color: Colors.white, size: 20),
+              child: const Icon(
+                Icons.person,
+                color: AppColors.textOnPrimary,
+                size: 20,
+              ),
             ),
           ],
         ],
+      ),
+    );
+  }
+
+  Widget _buildFormattedMessage(String content, bool isUser, bool isError) {
+    // Split content into lines and format each section
+    final lines = content.split('\n');
+    final List<Widget> widgets = [];
+
+    for (var i = 0; i < lines.length; i++) {
+      final line = lines[i];
+
+      // Skip empty lines (but add spacing)
+      if (line.trim().isEmpty) {
+        widgets.add(const SizedBox(height: 8));
+        continue;
+      }
+
+      // Handle product cards
+      if (line.contains('Product ID:') || line.contains('📦')) {
+        widgets.add(_buildProductHighlight(line, isUser));
+        continue;
+      }
+
+      // Handle prices
+      if (line.contains('\$') ||
+          line.contains('USD') ||
+          line.contains('Price:') ||
+          line.contains('💰')) {
+        widgets.add(_buildPriceHighlight(line, isUser));
+        continue;
+      }
+
+      // Handle bullet points
+      if (line.trim().startsWith('•') || line.trim().startsWith('-')) {
+        final text = line.trim().substring(1).trim();
+        widgets.add(
+          Padding(
+            padding: const EdgeInsets.only(left: 8, top: 4, bottom: 4),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '• ',
+                  style: TextStyle(
+                    color: isUser ? AppColors.textOnPrimary : AppColors.primary,
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Expanded(
+                  child: _buildTextWithFormatting(text, isUser, isError),
+                ),
+              ],
+            ),
+          ),
+        );
+      }
+      // Handle numbered lists
+      else if (RegExp(r'^\d+\.\s').hasMatch(line.trim())) {
+        widgets.add(
+          Padding(
+            padding: const EdgeInsets.only(left: 8, top: 4, bottom: 4),
+            child: _buildTextWithFormatting(line.trim(), isUser, isError),
+          ),
+        );
+      }
+      // Handle section headers (lines ending with :)
+      else if (line.trim().endsWith(':') && line.trim().length < 60) {
+        widgets.add(
+          Padding(
+            padding: const EdgeInsets.only(top: 8, bottom: 4),
+            child: Text(
+              line.trim(),
+              style: TextStyle(
+                color: isUser ? AppColors.textOnPrimary : AppColors.textPrimary,
+                fontSize: 15,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        );
+      }
+      // Handle bold text (surrounded by **)
+      else {
+        widgets.add(
+          Padding(
+            padding: const EdgeInsets.only(top: 2, bottom: 2),
+            child: _buildTextWithFormatting(line.trim(), isUser, isError),
+          ),
+        );
+      }
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: widgets,
+    );
+  }
+
+  Widget _buildProductHighlight(String text, bool isUser) {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 4),
+      padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        color: isUser
+            ? Colors.white.withOpacity(0.1)
+            : AppColors.primary.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: isUser
+              ? Colors.white.withOpacity(0.3)
+              : AppColors.primary.withOpacity(0.2),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            Icons.inventory_2_outlined,
+            size: 18,
+            color: isUser ? AppColors.textOnPrimary : AppColors.primary,
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              text,
+              style: TextStyle(
+                color: isUser ? AppColors.textOnPrimary : AppColors.textPrimary,
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPriceHighlight(String text, bool isUser) {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 2),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: isUser
+            ? Colors.white.withOpacity(0.1)
+            : AppColors.success.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Text(
+        text,
+        style: TextStyle(
+          color: isUser ? AppColors.textOnPrimary : AppColors.success,
+          fontSize: 14,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTextWithFormatting(String text, bool isUser, bool isError) {
+    // Handle bold text (**text**)
+    final boldPattern = RegExp(r'\*\*(.*?)\*\*');
+    final matches = boldPattern.allMatches(text);
+
+    if (matches.isEmpty) {
+      // No special formatting, return simple text
+      return Text(
+        text,
+        style: TextStyle(
+          color: isUser ? AppColors.textOnPrimary : AppColors.textPrimary,
+          fontSize: 15,
+          height: 1.4,
+        ),
+      );
+    }
+
+    // Build rich text with bold formatting
+    final List<TextSpan> spans = [];
+    int lastEnd = 0;
+
+    for (var match in matches) {
+      // Add text before the bold part
+      if (match.start > lastEnd) {
+        spans.add(TextSpan(text: text.substring(lastEnd, match.start)));
+      }
+
+      // Add the bold text
+      spans.add(
+        TextSpan(
+          text: match.group(1),
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
+      );
+
+      lastEnd = match.end;
+    }
+
+    // Add remaining text
+    if (lastEnd < text.length) {
+      spans.add(TextSpan(text: text.substring(lastEnd)));
+    }
+
+    return RichText(
+      text: TextSpan(
+        style: TextStyle(
+          color: isUser ? AppColors.textOnPrimary : AppColors.textPrimary,
+          fontSize: 15,
+          height: 1.4,
+        ),
+        children: spans,
       ),
     );
   }
