@@ -186,7 +186,7 @@ const updateUserProfile = async (req, res) => {
 // @access  Private/Admin
 const getAllUsers = async (req, res) => {
     const result = await pool.query(
-        'SELECT id, email, full_name, phone, is_active, created_at FROM users ORDER BY created_at DESC'
+        'SELECT id, email, full_name, phone, role, is_active, created_at FROM users ORDER BY created_at DESC'
     );
 
     res.json({
@@ -196,10 +196,115 @@ const getAllUsers = async (req, res) => {
     });
 };
 
+// @desc    Assign role to user (admin only)
+// @route   PUT /api/users/:id/assign-role
+// @access  Private/Admin
+const assignRoleToUser = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { role } = req.body;
+
+        // Validate role
+        const validRoles = ['customer', 'manager', 'delivery_man', 'admin'];
+        if (!role || !validRoles.includes(role)) {
+            return res.status(400).json({
+                success: false,
+                message: `Invalid role. Allowed roles: ${validRoles.join(', ')}`
+            });
+        }
+
+        // Check if user exists
+        const userCheck = await pool.query('SELECT * FROM users WHERE id = $1', [id]);
+        if (userCheck.rowCount === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'User not found'
+            });
+        }
+
+        // Update user role
+        const result = await pool.query(
+            `UPDATE users 
+             SET role = $1, updated_at = CURRENT_TIMESTAMP
+             WHERE id = $2
+             RETURNING id, email, full_name, phone, role, is_active, created_at`,
+            [role, id]
+        );
+
+        console.log('✅ User role assigned:', { userId: id, role });
+
+        res.json({
+            success: true,
+            message: `User role updated to ${role} successfully`,
+            data: result.rows[0]
+        });
+    } catch (error) {
+        console.error('Error assigning role:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to assign role',
+            error: error.message
+        });
+    }
+};
+
+// @desc    Get delivery men (users with delivery_man role)
+// @route   GET /api/users/role/delivery-men
+// @access  Private/Admin
+const getDeliveryMenList = async (req, res) => {
+    try {
+        const result = await pool.query(
+            'SELECT id, email, full_name, phone, role, is_active, created_at FROM users WHERE role = $1 ORDER BY full_name ASC',
+            ['delivery_man']
+        );
+
+        res.json({
+            success: true,
+            data: result.rows,
+            count: result.rowCount
+        });
+    } catch (error) {
+        console.error('Error fetching delivery men:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to fetch delivery men',
+            error: error.message
+        });
+    }
+};
+
+// @desc    Get managers (users with manager role)
+// @route   GET /api/users/role/managers
+// @access  Private/Admin
+const getManagersList = async (req, res) => {
+    try {
+        const result = await pool.query(
+            'SELECT id, email, full_name, phone, role, is_active, created_at FROM users WHERE role = $1 ORDER BY full_name ASC',
+            ['manager']
+        );
+
+        res.json({
+            success: true,
+            data: result.rows,
+            count: result.rowCount
+        });
+    } catch (error) {
+        console.error('Error fetching managers:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to fetch managers',
+            error: error.message
+        });
+    }
+};
+
 module.exports = {
     registerUser,
     loginUser,
     getUserProfile,
     updateUserProfile,
-    getAllUsers
+    getAllUsers,
+    assignRoleToUser,
+    getDeliveryMenList,
+    getManagersList
 };

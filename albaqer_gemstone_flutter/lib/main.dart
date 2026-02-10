@@ -8,9 +8,16 @@ import 'package:albaqer_gemstone_flutter/config/api_config.dart';
 import 'package:albaqer_gemstone_flutter/config/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'dart:io';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
+    sqfliteFfiInit();
+    databaseFactory = databaseFactoryFfi;
+  }
 
   // Print API configuration for debugging
   ApiConfig.printConfig();

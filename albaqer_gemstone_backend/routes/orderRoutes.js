@@ -6,14 +6,27 @@ const {
     getOrderById,
     createOrder,
     updateOrderStatus,
-    deleteOrder
+    deleteOrder,
+    // Manager functions
+    getPendingOrders,
+    getDeliveryMen,
+    assignOrderToDelivery,
+    getDeliveryManOrders,
+    unassignOrderFromDelivery
 } = require('../controllers/orderController');
-const { protect, admin } = require('../middleware/auth');
+const { protect, admin, manager } = require('../middleware/auth');
 const { validateOrder, validateId } = require('../middleware/validation');
 const { asyncHandler } = require('../middleware/errorHandler');
 
 // Admin routes (must come before specific routes)
 router.get('/all', protect, admin, asyncHandler(getAllOrders));
+
+// Manager routes
+router.get('/manager/pending', protect, manager, asyncHandler(getPendingOrders));
+router.get('/manager/delivery-men', protect, manager, asyncHandler(getDeliveryMen));
+router.get('/manager/delivery-man/:deliveryManId', protect, manager, asyncHandler(getDeliveryManOrders));
+router.put('/:id/assign-delivery', protect, manager, validateId, asyncHandler(assignOrderToDelivery));
+router.put('/:id/unassign-delivery', protect, manager, validateId, asyncHandler(unassignOrderFromDelivery));
 
 // Private routes
 router.get('/my-orders', protect, asyncHandler(getMyOrders));

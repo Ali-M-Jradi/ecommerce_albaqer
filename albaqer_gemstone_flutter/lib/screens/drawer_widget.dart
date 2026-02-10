@@ -1,7 +1,9 @@
 import 'package:albaqer_gemstone_flutter/screens/login_screen.dart';
 import 'package:albaqer_gemstone_flutter/screens/admin_products_screen.dart';
+import 'package:albaqer_gemstone_flutter/screens/admin_orders_screen.dart';
 import 'package:albaqer_gemstone_flutter/screens/chatbot_screen.dart';
 import 'package:albaqer_gemstone_flutter/screens/wishlist_screen.dart';
+import 'package:albaqer_gemstone_flutter/screens/dashboard_screen.dart';
 import 'package:albaqer_gemstone_flutter/services/auth_service.dart';
 import 'package:flutter/material.dart';
 import '../config/app_theme.dart';
@@ -115,6 +117,22 @@ class _DrawerWidgetState extends State<DrawerWidget> {
                   },
                 ),
 
+                // Dashboard
+                ListTile(
+                  leading: Icon(Icons.dashboard, color: AppColors.primary),
+                  title: Text('Dashboard'),
+                  subtitle: Text('Product statistics & insights'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const DashboardScreen(),
+                      ),
+                    );
+                  },
+                ),
+
                 // AI Assistant (Chatbot)
                 ListTile(
                   leading: Icon(Icons.chat_bubble, color: Colors.purple),
@@ -144,7 +162,9 @@ class _DrawerWidgetState extends State<DrawerWidget> {
                     Navigator.pop(context);
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => WishlistScreen()),
+                      MaterialPageRoute(
+                        builder: (context) => const WishlistScreen(),
+                      ),
                     );
                   },
                 ),
@@ -164,6 +184,22 @@ class _DrawerWidgetState extends State<DrawerWidget> {
                         color: AppColors.textSecondary,
                       ),
                     ),
+                  ),
+
+                  // Manage Orders
+                  ListTile(
+                    leading: Icon(Icons.receipt_long, color: AppColors.primary),
+                    title: Text('Manage Orders'),
+                    subtitle: Text('Review and manage all orders'),
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const AdminOrdersScreen(),
+                        ),
+                      );
+                    },
                   ),
 
                   // Manage Products

@@ -43,6 +43,8 @@ dependencies:
   uuid: ^4.5.1
   image_picker: ^1.0.7  # For camera and gallery
   image: ^4.1.7  # For image processing
+  sqflite_common_ffi: ^2.4.0+2
+  intl: ^0.20.2
 
 dev_dependencies:
   flutter_test:

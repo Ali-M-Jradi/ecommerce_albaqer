@@ -384,4 +384,156 @@ class ProductService {
       return [];
     }
   }
+
+  // ========== DASHBOARD STATISTICS ==========
+  /// Get products sorted by sales count (Best Sellers)
+  Future<List<Product>> getBestSellingProducts({int limit = 5}) async {
+    try {
+      final baseUrl = ApiConfig.baseUrl;
+      print('📊 Fetching best selling products...');
+
+      final response = await http
+          .get(Uri.parse('$baseUrl/products'))
+          .timeout(Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        final jsonResponse = jsonDecode(response.body);
+        List<dynamic> data = jsonResponse['data'] ?? [];
+
+        // Parse products
+        List<Product> products = data.map((json) {
+          return Product(
+            id: json['id'],
+            name: json['name'],
+            type: json['type'],
+            description: json['description'],
+            basePrice: _toDouble(json['base_price']),
+            rating: _toDouble(json['rating']),
+            totalReviews: json['total_reviews'] ?? 0,
+            quantityInStock: json['quantity_in_stock'],
+            imageUrl: json['image_url'],
+            isAvailable: json['is_available'] ?? true,
+            createdAt: json['created_at'] != null
+                ? DateTime.parse(json['created_at'])
+                : null,
+            updatedAt: json['updated_at'] != null
+                ? DateTime.parse(json['updated_at'])
+                : null,
+            metalType: json['metal_type'],
+            metalColor: json['metal_color'],
+            metalPurity: json['metal_purity'],
+            metalWeightGrams: _toDouble(json['metal_weight_grams']),
+            stoneType: json['stone_type'],
+            stoneColor: json['stone_color'],
+            stoneCarat: _toDouble(json['stone_carat']),
+            stoneCut: json['stone_cut'],
+            stoneClarity: json['stone_clarity'],
+          );
+        }).toList();
+
+        // Sort by total_reviews (as proxy for sales/popularity) in descending order
+        products.sort((a, b) => b.totalReviews.compareTo(a.totalReviews));
+
+        return products.take(limit).toList();
+      } else {
+        print('Failed to fetch best selling products: ${response.statusCode}');
+        return [];
+      }
+    } catch (e) {
+      print('Error fetching best selling products: $e');
+      return [];
+    }
+  }
+
+  /// Get products sorted by rating (Top Rated)
+  Future<List<Product>> getTopRatedProducts({int limit = 5}) async {
+    try {
+      final baseUrl = ApiConfig.baseUrl;
+      print('⭐ Fetching top rated products...');
+
+      final response = await http
+          .get(Uri.parse('$baseUrl/products'))
+          .timeout(Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        final jsonResponse = jsonDecode(response.body);
+        List<dynamic> data = jsonResponse['data'] ?? [];
+
+        // Parse products
+        List<Product> products = data.map((json) {
+          return Product(
+            id: json['id'],
+            name: json['name'],
+            type: json['type'],
+            description: json['description'],
+            basePrice: _toDouble(json['base_price']),
+            rating: _toDouble(json['rating']),
+            totalReviews: json['total_reviews'] ?? 0,
+            quantityInStock: json['quantity_in_stock'],
+            imageUrl: json['image_url'],
+            isAvailable: json['is_available'] ?? true,
+            createdAt: json['created_at'] != null
+                ? DateTime.parse(json['created_at'])
+                : null,
+            updatedAt: json['updated_at'] != null
+                ? DateTime.parse(json['updated_at'])
+                : null,
+            metalType: json['metal_type'],
+            metalColor: json['metal_color'],
+            metalPurity: json['metal_purity'],
+            metalWeightGrams: _toDouble(json['metal_weight_grams']),
+            stoneType: json['stone_type'],
+            stoneColor: json['stone_color'],
+            stoneCarat: _toDouble(json['stone_carat']),
+            stoneCut: json['stone_cut'],
+            stoneClarity: json['stone_clarity'],
+          );
+        }).toList();
+
+        // Filter products with rating > 0 and sort by rating
+        products = products.where((p) => p.rating > 0).toList();
+        products.sort((a, b) => b.rating.compareTo(a.rating));
+
+        return products.take(limit).toList();
+      } else {
+        print('Failed to fetch top rated products: ${response.statusCode}');
+        return [];
+      }
+    } catch (e) {
+      print('Error fetching top rated products: $e');
+      return [];
+    }
+  }
+
+  /// Get products by type for dashboard
+  Future<Map<String, int>> getProductsByType() async {
+    try {
+      final baseUrl = ApiConfig.baseUrl;
+      print('📊 Fetching products by type...');
+
+      final response = await http
+          .get(Uri.parse('$baseUrl/products'))
+          .timeout(Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        final jsonResponse = jsonDecode(response.body);
+        List<dynamic> data = jsonResponse['data'] ?? [];
+
+        // Count products by type
+        Map<String, int> typeCount = {};
+        for (var product in data) {
+          String type = product['type'] ?? 'Unknown';
+          typeCount[type] = (typeCount[type] ?? 0) + 1;
+        }
+
+        return typeCount;
+      } else {
+        print('Failed to fetch products by type: ${response.statusCode}');
+        return {};
+      }
+    } catch (e) {
+      print('Error fetching products by type: $e');
+      return {};
+    }
+  }
 }

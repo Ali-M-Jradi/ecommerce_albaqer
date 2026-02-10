@@ -50,6 +50,42 @@ const admin = (req, res, next) => {
     }
 };
 
+// Manager only access
+const manager = (req, res, next) => {
+    if (req.user && req.user.role === 'manager') {
+        next();
+    } else {
+        res.status(403).json({
+            success: false,
+            message: 'Not authorized as manager'
+        });
+    }
+};
+
+// Delivery man only access
+const deliveryMan = (req, res, next) => {
+    if (req.user && req.user.role === 'delivery_man') {
+        next();
+    } else {
+        res.status(403).json({
+            success: false,
+            message: 'Not authorized as delivery man'
+        });
+    }
+};
+
+// Manager or Admin access
+const managerOrAdmin = (req, res, next) => {
+    if (req.user && (req.user.role === 'manager' || req.user.role === 'admin')) {
+        next();
+    } else {
+        res.status(403).json({
+            success: false,
+            message: 'Not authorized. Manager or Admin access required'
+        });
+    }
+};
+
 // Generate JWT token
 const generateToken = (id, email, role = 'customer') => {
     return jwt.sign(
@@ -62,5 +98,8 @@ const generateToken = (id, email, role = 'customer') => {
 module.exports = {
     protect,
     admin,
+    manager,
+    deliveryMan,
+    managerOrAdmin,
     generateToken
 };

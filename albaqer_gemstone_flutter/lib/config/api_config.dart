@@ -2,7 +2,8 @@
 /// Update the _serverIp when your server IP changes
 class ApiConfig {
   // ⚙️ CONFIGURATION - Server IP (both services on same machine)
-  static const String _serverIp = '192.168.0.120';
+  //static const String _serverIp = '192.168.0.120';
+  static const String _serverIp = '192.168.0.110';
 
   // Backend API (products, cart, orders)
   static const String _backendPort = '3000';

@@ -355,7 +355,19 @@ class OrderService {
   Future<bool> deleteOrder(int orderId) async {
     try {
       final baseUrl = ApiConfig.baseUrl;
-      final response = await http.delete(Uri.parse('$baseUrl/orders/$orderId'));
+      final token = await _getToken();
+      if (token == null) {
+        print('No auth token found');
+        return false;
+      }
+
+      final response = await http.delete(
+        Uri.parse('$baseUrl/orders/$orderId'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
 
       if (response.statusCode == 200) {
         print('Order deleted successfully');
@@ -369,6 +381,99 @@ class OrderService {
       }
     } catch (e) {
       print('Error deleting order: $e');
+      return false;
+    }
+  }
+
+  // ========== ADMIN FUNCTIONS ==========
+  /// Fetch ALL orders (Admin only)
+  Future<List<Order>> getAllOrdersAdmin() async {
+    try {
+      final token = await _getToken();
+      if (token == null) {
+        print('❌ No auth token found');
+        return [];
+      }
+
+      final baseUrl = ApiConfig.baseUrl;
+      final response = await http.get(
+        Uri.parse('$baseUrl/orders/all'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final jsonResponse = jsonDecode(response.body);
+        List<dynamic> data = jsonResponse['data'];
+        return data.map((json) {
+          return Order(
+            id: json['id'],
+            userId: json['user_id'],
+            orderNumber: json['order_number'],
+            totalAmount: double.parse(json['total_amount'].toString()),
+            taxAmount: json['tax_amount'] != null
+                ? double.parse(json['tax_amount'].toString())
+                : 0.0,
+            shippingCost: json['shipping_cost'] != null
+                ? double.parse(json['shipping_cost'].toString())
+                : 0.0,
+            discountAmount: json['discount_amount'] != null
+                ? double.parse(json['discount_amount'].toString())
+                : 0.0,
+            status: json['status'] ?? 'pending',
+            shippingAddressId: json['shipping_address_id'],
+            billingAddressId: json['billing_address_id'],
+            trackingNumber: json['tracking_number'],
+            notes: json['notes'],
+            createdAt: json['created_at'] != null
+                ? DateTime.parse(json['created_at'])
+                : null,
+            updatedAt: json['updated_at'] != null
+                ? DateTime.parse(json['updated_at'])
+                : null,
+          );
+        }).toList();
+      } else {
+        print('Failed to fetch all orders: ${response.statusCode}');
+        return [];
+      }
+    } catch (e) {
+      print('Error fetching all orders: $e');
+      return [];
+    }
+  }
+
+  /// Update order status (Admin only)
+  Future<bool> updateOrderStatusAdmin(int orderId, String newStatus) async {
+    try {
+      final token = await _getToken();
+      if (token == null) {
+        print('❌ No auth token found');
+        return false;
+      }
+
+      final baseUrl = ApiConfig.baseUrl;
+      final response = await http.put(
+        Uri.parse('$baseUrl/orders/$orderId/status'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode({'status': newStatus, 'tracking_number': null}),
+      );
+
+      if (response.statusCode == 200) {
+        print('✅ Order status updated to: $newStatus');
+        return true;
+      } else {
+        print('❌ Failed to update order status: ${response.statusCode}');
+        print('Response: ${response.body}');
+        return false;
+      }
+    } catch (e) {
+      print('❌ Error updating order status: $e');
       return false;
     }
   }
