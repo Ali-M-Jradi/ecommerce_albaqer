@@ -11,6 +11,8 @@ class Order {
   final int? billingAddressId;
   final String? trackingNumber;
   final String? notes;
+  final int? deliveryManId;
+  final DateTime? assignedAt;
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
@@ -27,9 +29,44 @@ class Order {
     this.billingAddressId,
     this.trackingNumber,
     this.notes,
+    this.deliveryManId,
+    this.assignedAt,
     this.createdAt,
     this.updatedAt,
   });
+
+  factory Order.fromJson(Map<String, dynamic> json) {
+    return Order(
+      id: json['id'],
+      userId: json['user_id'],
+      orderNumber: json['order_number'],
+      totalAmount: double.parse(json['total_amount'].toString()),
+      taxAmount: json['tax_amount'] != null
+          ? double.parse(json['tax_amount'].toString())
+          : 0.0,
+      shippingCost: json['shipping_cost'] != null
+          ? double.parse(json['shipping_cost'].toString())
+          : 0.0,
+      discountAmount: json['discount_amount'] != null
+          ? double.parse(json['discount_amount'].toString())
+          : 0.0,
+      status: json['status'] ?? 'pending',
+      shippingAddressId: json['shipping_address_id'],
+      billingAddressId: json['billing_address_id'],
+      trackingNumber: json['tracking_number'],
+      notes: json['notes'],
+      deliveryManId: json['delivery_man_id'],
+      assignedAt: json['assigned_at'] != null
+          ? DateTime.parse(json['assigned_at'])
+          : null,
+      createdAt: json['created_at'] != null
+          ? DateTime.parse(json['created_at'])
+          : null,
+      updatedAt: json['updated_at'] != null
+          ? DateTime.parse(json['updated_at'])
+          : null,
+    );
+  }
 
   Map<String, dynamic> get orderMap {
     return {
@@ -45,6 +82,8 @@ class Order {
       'billing_address_id': billingAddressId,
       'tracking_number': trackingNumber,
       'notes': notes,
+      'delivery_man_id': deliveryManId,
+      'assigned_at': assignedAt?.toIso8601String(),
       'created_at': createdAt?.toIso8601String(),
       'updated_at': updatedAt?.toIso8601String(),
     };

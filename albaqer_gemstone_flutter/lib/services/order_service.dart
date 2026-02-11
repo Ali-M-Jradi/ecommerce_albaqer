@@ -528,4 +528,170 @@ class OrderService {
       return false;
     }
   }
+
+  // ========================================================================
+  // MANAGER-SPECIFIC METHODS
+  // ========================================================================
+
+  /// Get all pending orders (Manager only)
+  Future<List<Order>> getPendingOrdersManager() async {
+    try {
+      final token = await _getToken();
+      if (token == null) {
+        print('❌ No auth token found');
+        return [];
+      }
+
+      final baseUrl = ApiConfig.baseUrl;
+      final response = await http.get(
+        Uri.parse('$baseUrl/orders/manager/pending'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success'] == true && data['data'] != null) {
+          final List<dynamic> ordersJson = data['data'];
+          return ordersJson.map((json) => Order.fromJson(json)).toList();
+        }
+      }
+      print('❌ Failed to fetch pending orders: ${response.statusCode}');
+      return [];
+    } catch (e) {
+      print('❌ Error fetching pending orders: $e');
+      return [];
+    }
+  }
+
+  /// Get list of all delivery people (Manager only)
+  Future<List<Map<String, dynamic>>> getDeliveryPeople() async {
+    try {
+      final token = await _getToken();
+      if (token == null) {
+        print('❌ No auth token found');
+        return [];
+      }
+
+      final baseUrl = ApiConfig.baseUrl;
+      final response = await http.get(
+        Uri.parse('$baseUrl/orders/manager/delivery-men'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success'] == true && data['data'] != null) {
+          return List<Map<String, dynamic>>.from(data['data']);
+        }
+      }
+      print('❌ Failed to fetch delivery people: ${response.statusCode}');
+      return [];
+    } catch (e) {
+      print('❌ Error fetching delivery people: $e');
+      return [];
+    }
+  }
+
+  /// Get orders assigned to a specific delivery person (Manager only)
+  Future<List<Order>> getDeliveryPersonOrders(int deliveryManId) async {
+    try {
+      final token = await _getToken();
+      if (token == null) {
+        print('❌ No auth token found');
+        return [];
+      }
+
+      final baseUrl = ApiConfig.baseUrl;
+      final response = await http.get(
+        Uri.parse('$baseUrl/orders/manager/delivery-man/$deliveryManId'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success'] == true && data['data'] != null) {
+          final List<dynamic> ordersJson = data['data'];
+          return ordersJson.map((json) => Order.fromJson(json)).toList();
+        }
+      }
+      print('❌ Failed to fetch delivery person orders: ${response.statusCode}');
+      return [];
+    } catch (e) {
+      print('❌ Error fetching delivery person orders: $e');
+      return [];
+    }
+  }
+
+  /// Assign order to delivery person (Manager only)
+  Future<bool> assignOrderToDelivery(int orderId, int deliveryManId) async {
+    try {
+      final token = await _getToken();
+      if (token == null) {
+        print('❌ No auth token found');
+        return false;
+      }
+
+      final baseUrl = ApiConfig.baseUrl;
+      final response = await http.put(
+        Uri.parse('$baseUrl/orders/$orderId/assign-delivery'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode({'delivery_man_id': deliveryManId}),
+      );
+
+      if (response.statusCode == 200) {
+        print('✅ Order assigned to delivery person #$deliveryManId');
+        return true;
+      } else {
+        print('❌ Failed to assign order: ${response.statusCode}');
+        print('Response: ${response.body}');
+        return false;
+      }
+    } catch (e) {
+      print('❌ Error assigning order: $e');
+      return false;
+    }
+  }
+
+  /// Unassign delivery person from order (Manager only)
+  Future<bool> unassignOrderFromDelivery(int orderId) async {
+    try {
+      final token = await _getToken();
+      if (token == null) {
+        print('❌ No auth token found');
+        return false;
+      }
+
+      final baseUrl = ApiConfig.baseUrl;
+      final response = await http.put(
+        Uri.parse('$baseUrl/orders/$orderId/unassign-delivery'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        print('✅ Delivery person unassigned from order');
+        return true;
+      } else {
+        print('❌ Failed to unassign delivery person: ${response.statusCode}');
+        return false;
+      }
+    } catch (e) {
+      print('❌ Error unassigning delivery person: $e');
+      return false;
+    }
+  }
 }

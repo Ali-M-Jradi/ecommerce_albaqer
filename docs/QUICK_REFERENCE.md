@@ -20,9 +20,9 @@ JWT Secret: Configured in .env
 ```
 
 ### 12 Database Tables
-✅ users (8 columns)
+✅ users (8 columns) - Includes role: customer, admin, manager, delivery_man
 ✅ products (21 columns)
-✅ orders (14 columns)
+✅ orders (16 columns) - Includes delivery_man_id, assigned_at for manager assignment
 ✅ order_items (5 columns)
 ✅ payments (10 columns)
 ✅ carts (4 columns)
@@ -32,6 +32,23 @@ JWT Secret: Configured in .env
 ✅ product_categories (2 columns)
 ✅ reviews (11 columns)
 ✅ wishlists (4 columns)
+
+### User Roles & Order Workflow
+**4 User Roles:**
+- **customer** - Browse, order, review products
+- **admin** - Manage products, approve orders, view all data
+- **manager** - Assign confirmed orders to delivery personnel
+- **delivery_man** - Handle assigned deliveries
+
+**Order Workflow:**  
+`PENDING` (Customer creates) → `CONFIRMED` (Admin approves) → `ASSIGNED` (Manager assigns) → `IN_TRANSIT` (Delivery picks up) → `DELIVERED` (Completed)
+
+**Key Rules:**
+- Only CONFIRMED orders can be assigned by manager
+- PENDING orders must be approved by admin first
+- Managers see only confirmed unassigned orders in "Ready to Assign" filter
+
+📖 **Complete documentation:** See `docs/ROLES_AND_WORKFLOW_GUIDE.md` and `docs/MANAGER_ROLE_GUIDE.md`
 
 ---
 
@@ -109,7 +126,15 @@ List<Product> products = await manager.getProducts();
 - `GET /api/orders/:id` - Get single order (Auth)
 - `POST /api/orders` - Create order (Auth)
 - `GET /api/orders` - Get all orders (Admin)
+- `GET /api/orders/all` - Get all orders (Manager/Admin) - Used for reassignments
 - `PUT /api/orders/:id/status` - Update order status (Admin)
+
+### Manager (Order Assignment)
+- `GET /api/orders/manager/pending` - Get confirmed unassigned orders (Manager)
+- `GET /api/orders/manager/delivery-men` - Get all delivery personnel (Manager)
+- `GET /api/orders/manager/delivery-man/:id` - Get delivery person details (Manager)
+- `PUT /api/orders/:id/assign-delivery` - Assign order to delivery person (Manager)
+- `PUT /api/orders/:id/unassign-delivery` - Unassign delivery person (Manager)
 
 ---
 

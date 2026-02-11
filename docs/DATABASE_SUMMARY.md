@@ -156,9 +156,9 @@ Your PostgreSQL backend has **12 tables**:
 
 | Table | Columns | Description |
 |-------|---------|-------------|
-| **users** | 8 | User accounts (id, email, password_hash, full_name, phone, created_at, updated_at, is_active) |
+| **users** | 8 | User accounts (id, email, password_hash, full_name, phone, created_at, updated_at, is_active) - Includes role field (customer, admin, manager, delivery_man) |
 | **products** | 21 | Jewelry products with full specifications including metal and stone details |
-| **orders** | 14 | Customer orders with shipping, billing, and tracking info |
+| **orders** | 16 | Customer orders with shipping, billing, tracking info, and manager assignment (delivery_man_id, assigned_at for order assignment workflow) |
 | **order_items** | 5 | Line items in each order |
 | **payments** | 10 | Payment transactions (id, order_id, payment_method, transaction_id, amount, currency, status, payment_gateway, card_last_four, created_at) |
 | **carts** | 4 | User shopping carts |
@@ -206,6 +206,32 @@ netstat -ano | findstr :3000
 # Kill process (replace <PID>)
 taskkill /PID <PID> /F
 ```
+
+---
+
+## 🔄 Order Workflow & User Roles
+
+### User Roles
+The system supports 4 user roles with distinct permissions:
+- **customer** - Create orders, view own orders, submit reviews
+- **admin** - Manage products, approve/confirm orders, view all data
+- **manager** - Assign confirmed orders to delivery personnel, manage assignments
+- **delivery_man** - Handle assigned deliveries, update delivery status
+
+### Order Status Workflow
+```
+PENDING → CONFIRMED → ASSIGNED → IN_TRANSIT → DELIVERED
+   ↓          ↓           ↓           ↓           ↓
+Customer   Admin      Manager    Delivery    Complete
+ creates   approves   assigns    picks up
+```
+
+**Key Rules:**
+- Only **CONFIRMED** orders can be assigned by manager
+- **PENDING** orders must be approved by admin first
+- Orders table includes `delivery_man_id` and `assigned_at` for tracking assignments
+
+**Complete documentation:** See [ROLES_AND_WORKFLOW_GUIDE.md](./ROLES_AND_WORKFLOW_GUIDE.md) and [MANAGER_ROLE_GUIDE.md](./MANAGER_ROLE_GUIDE.md)
 
 ---
 

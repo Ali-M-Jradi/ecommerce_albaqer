@@ -424,14 +424,16 @@ const deleteOrder = async (req, res) => {
 
 // ========== MANAGER FUNCTIONS ==========
 
-// @desc    Get all pending/unassigned orders (for manager)
+// @desc    Get all confirmed unassigned orders (for manager to assign)
 // @route   GET /api/orders/manager/pending
 // @access  Private/Manager
 const getPendingOrders = async (req, res) => {
     try {
+        // Only return CONFIRMED orders that are NOT yet assigned
+        // Pending orders need admin approval first
         const result = await pool.query(
             `SELECT o.* FROM orders o
-             WHERE o.status IN ('pending', 'confirmed') OR o.delivery_man_id IS NULL
+             WHERE o.status = 'confirmed' AND o.delivery_man_id IS NULL
              ORDER BY o.created_at DESC`
         );
 

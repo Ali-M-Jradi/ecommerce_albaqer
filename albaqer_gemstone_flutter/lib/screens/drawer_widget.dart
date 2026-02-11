@@ -4,6 +4,9 @@ import 'package:albaqer_gemstone_flutter/screens/admin_orders_screen.dart';
 import 'package:albaqer_gemstone_flutter/screens/chatbot_screen.dart';
 import 'package:albaqer_gemstone_flutter/screens/wishlist_screen.dart';
 import 'package:albaqer_gemstone_flutter/screens/dashboard_screen.dart';
+import 'package:albaqer_gemstone_flutter/screens/manager_dashboard_screen.dart';
+import 'package:albaqer_gemstone_flutter/screens/manager_orders_screen.dart';
+import 'package:albaqer_gemstone_flutter/screens/delivery_people_screen.dart';
 import 'package:albaqer_gemstone_flutter/services/auth_service.dart';
 import 'package:flutter/material.dart';
 import '../config/app_theme.dart';
@@ -74,7 +77,11 @@ class _DrawerWidgetState extends State<DrawerWidget> {
             currentAccountPicture: CircleAvatar(
               backgroundColor: AppColors.background,
               child: Icon(
-                userRole == 'admin' ? Icons.admin_panel_settings : Icons.person,
+                userRole == 'admin'
+                    ? Icons.admin_panel_settings
+                    : userRole == 'manager'
+                    ? Icons.manage_accounts
+                    : Icons.person,
                 size: 40,
                 color: AppColors.primary,
               ),
@@ -92,7 +99,7 @@ class _DrawerWidgetState extends State<DrawerWidget> {
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
-                    color: userRole == 'admin'
+                    color: (userRole == 'admin' || userRole == 'manager')
                         ? AppColors.secondary
                         : AppColors.textOnPrimary,
                   ),
@@ -168,6 +175,72 @@ class _DrawerWidgetState extends State<DrawerWidget> {
                     );
                   },
                 ),
+
+                // ========================================
+                // MANAGER-ONLY MENU ITEMS
+                // ========================================
+                if (userRole == 'manager') ...[
+                  Divider(),
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    child: Text(
+                      'Manager Tools',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ),
+
+                  // Manager Dashboard
+                  ListTile(
+                    leading: Icon(Icons.dashboard, color: AppColors.primary),
+                    title: Text('Manager Dashboard'),
+                    subtitle: Text('Overview and quick actions'),
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const ManagerDashboardScreen(),
+                        ),
+                      );
+                    },
+                  ),
+
+                  // Manage Orders
+                  ListTile(
+                    leading: Icon(Icons.receipt_long, color: Colors.blue),
+                    title: Text('Manage Orders'),
+                    subtitle: Text('Assign orders to delivery'),
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const ManagerOrdersScreen(),
+                        ),
+                      );
+                    },
+                  ),
+
+                  // Delivery People
+                  ListTile(
+                    leading: Icon(Icons.people, color: Colors.green),
+                    title: Text('Delivery People'),
+                    subtitle: Text('View delivery staff'),
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const DeliveryPeopleScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                ],
 
                 // ========================================
                 // ADMIN-ONLY MENU ITEMS

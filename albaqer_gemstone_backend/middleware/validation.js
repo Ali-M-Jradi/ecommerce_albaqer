@@ -56,9 +56,9 @@ const validateUserRegister = [
         .notEmpty().withMessage('Full name is required')
         .isLength({ min: 2, max: 100 }).withMessage('Name must be between 2 and 100 characters'),
     body('phone')
-        .optional()
+        .optional({ nullable: true, checkFalsy: true })
         .trim()
-        .matches(/^[0-9]{8,15}$/).withMessage('Invalid phone number'),
+        .isLength({ min: 8, max: 20 }).withMessage('Phone number must be 8-20 characters'),
     validate
 ];
 

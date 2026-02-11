@@ -16,12 +16,12 @@ const {
     // Inventory monitoring
     getLowStockProducts
 } = require('../controllers/orderController');
-const { protect, admin, manager } = require('../middleware/auth');
+const { protect, admin, manager, managerOrAdmin } = require('../middleware/auth');
 const { validateOrder, validateId } = require('../middleware/validation');
 const { asyncHandler } = require('../middleware/errorHandler');
 
-// Admin routes (must come before specific routes)
-router.get('/all', protect, admin, asyncHandler(getAllOrders));
+// Admin and Manager routes (must come before specific routes)
+router.get('/all', protect, managerOrAdmin, asyncHandler(getAllOrders));
 router.get('/inventory/low-stock', protect, admin, asyncHandler(getLowStockProducts));
 
 // Manager routes
