@@ -44,7 +44,7 @@ const args = process.argv.slice(2);
 if (args.length < 4) {
     console.log('Usage: node create_test_user.js <role> <email> <fullname> <password>');
     console.log('');
-    console.log('Roles: customer, admin, manager, delivery_man');
+    console.log('Roles: user, admin, manager, delivery_man');
     console.log('');
     console.log('Examples:');
     console.log('  node create_test_user.js manager manager@test.com "Test Manager" password123');
@@ -55,7 +55,7 @@ if (args.length < 4) {
 const [role, email, fullName, password] = args;
 
 // Validate role
-const validRoles = ['customer', 'admin', 'manager', 'delivery_man'];
+const validRoles = ['user', 'admin', 'manager', 'delivery_man'];
 if (!validRoles.includes(role)) {
     console.error(`❌ Invalid role: ${role}`);
     console.error(`   Valid roles: ${validRoles.join(', ')}`);

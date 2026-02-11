@@ -78,7 +78,7 @@ class _GemstoneScanScreenState extends State<GemstoneScanScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Gemstone Scanner'),
-        backgroundColor: AppColors.info,
+        backgroundColor: AppColors.primary,
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -114,7 +114,7 @@ class _GemstoneScanScreenState extends State<GemstoneScanScreen> {
                     _isLoading ? 'Analyzing...' : 'Identify Gemstone',
                   ),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.info,
+                    backgroundColor: AppColors.primary,
                     foregroundColor: AppColors.textOnPrimary,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                   ),
@@ -136,7 +136,7 @@ class _GemstoneScanScreenState extends State<GemstoneScanScreen> {
         padding: const EdgeInsets.all(32.0),
         child: Column(
           children: [
-            const Icon(Icons.camera_alt, size: 80, color: AppColors.info),
+            const Icon(Icons.camera_alt, size: 80, color: AppColors.secondary),
             const SizedBox(height: 16),
             const Text(
               'Take a photo or select from gallery',
@@ -152,7 +152,7 @@ class _GemstoneScanScreenState extends State<GemstoneScanScreen> {
                   icon: const Icon(Icons.camera),
                   label: const Text('Camera'),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.info,
+                    backgroundColor: AppColors.primary,
                     foregroundColor: AppColors.textOnPrimary,
                   ),
                 ),
@@ -161,7 +161,7 @@ class _GemstoneScanScreenState extends State<GemstoneScanScreen> {
                   icon: const Icon(Icons.photo_library),
                   label: const Text('Gallery'),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.info,
+                    backgroundColor: AppColors.primary,
                     foregroundColor: AppColors.textOnPrimary,
                   ),
                 ),
@@ -234,7 +234,11 @@ class _GemstoneScanScreenState extends State<GemstoneScanScreen> {
               children: [
                 Row(
                   children: [
-                    const Icon(Icons.diamond, color: AppColors.info, size: 32),
+                    const Icon(
+                      Icons.diamond,
+                      color: AppColors.secondary,
+                      size: 32,
+                    ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Column(
@@ -378,7 +382,7 @@ class _GemstoneScanScreenState extends State<GemstoneScanScreen> {
           children: [
             Row(
               children: [
-                const Icon(Icons.school, color: AppColors.info),
+                const Icon(Icons.school, color: AppColors.secondary),
                 const SizedBox(width: 8),
                 const Text(
                   'Expert Knowledge',
@@ -397,7 +401,7 @@ class _GemstoneScanScreenState extends State<GemstoneScanScreen> {
                       knowledge.title,
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
-                        color: AppColors.info,
+                        color: AppColors.secondary,
                       ),
                     ),
                     const SizedBox(height: 4),

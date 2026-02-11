@@ -667,8 +667,8 @@ class _ShopScreenState extends State<ShopScreen> {
   }
 
   Widget _buildProductCard(Product product, CartService cartService) {
-    final availableStock = cartService.getAvailableStock(product);
     final quantityInCart = cartService.getProductQuantity(product.id ?? 0);
+    final availableStock = product.quantityInStock - quantityInCart;
 
     return GestureDetector(
       onTap: () {

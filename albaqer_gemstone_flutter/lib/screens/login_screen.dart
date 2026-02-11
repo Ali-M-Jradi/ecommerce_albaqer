@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../services/auth_service.dart';
+import '../services/cart_service.dart';
 import '../config/app_theme.dart';
 import 'register_screen.dart';
 import 'tabs_screen.dart';
@@ -128,6 +130,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
       if (result['success']) {
         // Login successful!
+        // Load user's cart from backend
+        final cartService = Provider.of<CartService>(context, listen: false);
+        await cartService.loadCart();
+
         // EXPLAIN: Navigate and remove login screen from stack
         if (mounted) {
           Navigator.pushReplacement(

@@ -43,7 +43,9 @@ class _ManagerOrdersScreenState extends State<ManagerOrdersScreen> {
   }
 
   List<Order> _filterOrders(List<Order> orders) {
-    if (_selectedFilter == 'all') {
+    if (_selectedFilter == 'all' || _selectedFilter == 'pending') {
+      // 'all' returns everything; 'pending' (Ready to Assign) is already
+      // filtered by the backend endpoint (confirmed + unassigned)
       return orders;
     }
     return orders.where((order) => order.status == _selectedFilter).toList();

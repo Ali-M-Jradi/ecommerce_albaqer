@@ -154,8 +154,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                       style: ElevatedButton.styleFrom(
                         padding: EdgeInsets.symmetric(vertical: 16),
-                        backgroundColor: Colors.black,
-                        foregroundColor: Colors.white,
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: AppColors.textOnPrimary,
                       ),
                     ),
                   ),
@@ -180,8 +180,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                       style: ElevatedButton.styleFrom(
                         padding: EdgeInsets.symmetric(vertical: 16),
-                        backgroundColor: Colors.purple,
-                        foregroundColor: Colors.white,
+                        backgroundColor: AppColors.secondary,
+                        foregroundColor: AppColors.textPrimary,
                       ),
                     ),
                   ),
@@ -207,8 +207,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         style: OutlinedButton.styleFrom(
                           padding: EdgeInsets.symmetric(vertical: 16),
-                          foregroundColor: Colors.black,
-                          side: BorderSide(color: Colors.black),
+                          foregroundColor: AppColors.primary,
+                          side: BorderSide(color: AppColors.primary),
                         ),
                       ),
                     ),

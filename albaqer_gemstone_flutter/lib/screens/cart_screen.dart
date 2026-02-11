@@ -1,5 +1,3 @@
-import 'package:albaqer_gemstone_flutter/models/cart_item.dart';
-import 'package:albaqer_gemstone_flutter/models/product.dart';
 import 'package:albaqer_gemstone_flutter/models/order_item.dart';
 import 'package:albaqer_gemstone_flutter/models/address.dart';
 import 'package:albaqer_gemstone_flutter/services/cart_service.dart';
@@ -38,6 +36,21 @@ class CartScreen extends StatefulWidget {
 class _CartScreenState extends State<CartScreen> {
   bool _isLoading = false;
   Address? _selectedAddress; // Store selected shipping address
+
+  // Helpers for parsing PostgreSQL numeric values (come as strings in JSON)
+  double _parseDouble(dynamic value) {
+    if (value is double) return value;
+    if (value is int) return value.toDouble();
+    if (value is String) return double.tryParse(value) ?? 0.0;
+    return 0.0;
+  }
+
+  int _parseInt(dynamic value) {
+    if (value is int) return value;
+    if (value is double) return value.toInt();
+    if (value is String) return int.tryParse(value) ?? 0;
+    return 0;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -83,13 +96,7 @@ class _CartScreenState extends State<CartScreen> {
                   itemCount: cartService.cartItems.length,
                   itemBuilder: (context, index) {
                     final cartItem = cartService.cartItems[index];
-                    final product = cartService.cartProducts[index];
-                    return _buildCartItemCard(
-                      context,
-                      cartService,
-                      cartItem,
-                      product,
-                    );
+                    return _buildCartItemCard(context, cartService, cartItem);
                   },
                 ),
               ),
@@ -163,10 +170,19 @@ class _CartScreenState extends State<CartScreen> {
   Widget _buildCartItemCard(
     BuildContext context,
     CartService cartService,
-    CartItem cartItem,
-    Product product,
+    Map<String, dynamic> cartItem,
   ) {
-    final itemSubtotal = cartItem.priceAtAdd * cartItem.quantity;
+    // Extract data from cart item (includes embedded product details)
+    // Note: PostgreSQL numeric values come as strings in JSON
+    final priceAtAdd = _parseDouble(cartItem['price_at_add']);
+    final quantity = _parseInt(cartItem['quantity']);
+    final itemSubtotal = priceAtAdd * quantity;
+
+    final productName = cartItem['product_name'] ?? 'Unknown Product';
+    final productType = cartItem['product_type'] ?? '';
+    final productImage = cartItem['product_image'];
+    final productInStock = _parseInt(cartItem['product_in_stock']);
+    final cartItemId = cartItem['id'];
 
     return Card(
       margin: EdgeInsets.symmetric(vertical: 8, horizontal: 4),
@@ -185,11 +201,13 @@ class _CartScreenState extends State<CartScreen> {
                 borderRadius: BorderRadius.circular(8),
                 color: AppColors.surface,
               ),
-              child: product.fullImageUrl != null
+              child: productImage != null
                   ? ClipRRect(
                       borderRadius: BorderRadius.circular(8),
                       child: Image.network(
-                        product.fullImageUrl!,
+                        productImage.startsWith('http')
+                            ? productImage
+                            : 'http://192.168.1.4:3000$productImage',
                         fit: BoxFit.cover,
                         errorBuilder: (context, error, stackTrace) {
                           return Icon(
@@ -211,7 +229,7 @@ class _CartScreenState extends State<CartScreen> {
                 children: [
                   // Product Name
                   Text(
-                    product.name,
+                    productName,
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
@@ -220,29 +238,17 @@ class _CartScreenState extends State<CartScreen> {
 
                   // Product Type
                   Text(
-                    product.type,
+                    productType,
                     style: TextStyle(
                       fontSize: 14,
                       color: AppColors.textSecondary,
                     ),
                   ),
-                  SizedBox(height: 4),
-
-                  // Tracking ID (UUID)
-                  if (cartItem.trackingId != null)
-                    Text(
-                      'Track ID: ${cartItem.trackingId!.substring(0, 8)}...',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: AppColors.info,
-                        fontFamily: 'monospace',
-                      ),
-                    ),
                   SizedBox(height: 8),
 
                   // Price per unit
                   Text(
-                    '\$${cartItem.priceAtAdd.toStringAsFixed(2)} each',
+                    '\$${priceAtAdd.toStringAsFixed(2)} each',
                     style: TextStyle(
                       fontSize: 14,
                       color: AppColors.textSecondary,
@@ -266,7 +272,7 @@ class _CartScreenState extends State<CartScreen> {
                             // DECREMENT BUTTON
                             InkWell(
                               onTap: () =>
-                                  _decrementQuantity(cartService, cartItem.id!),
+                                  _decrementQuantity(cartService, cartItemId),
                               child: Padding(
                                 padding: EdgeInsets.all(8),
                                 child: Icon(Icons.remove, size: 16),
@@ -277,7 +283,7 @@ class _CartScreenState extends State<CartScreen> {
                             Padding(
                               padding: EdgeInsets.symmetric(horizontal: 6),
                               child: Text(
-                                '${cartItem.quantity}',
+                                '$quantity',
                                 style: TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.bold,
@@ -289,8 +295,8 @@ class _CartScreenState extends State<CartScreen> {
                             InkWell(
                               onTap: () => _incrementQuantity(
                                 cartService,
-                                cartItem.id!,
-                                product,
+                                cartItemId,
+                                productInStock,
                               ),
                               child: Padding(
                                 padding: EdgeInsets.all(8),
@@ -322,7 +328,7 @@ class _CartScreenState extends State<CartScreen> {
             IconButton(
               icon: Icon(Icons.close, color: AppColors.error),
               onPressed: () =>
-                  _removeItem(cartService, cartItem.id!, product.name),
+                  _removeItem(cartService, cartItemId, productName),
               tooltip: 'Remove from cart',
             ),
           ],
@@ -508,13 +514,13 @@ class _CartScreenState extends State<CartScreen> {
   Future<void> _incrementQuantity(
     CartService cartService,
     int cartItemId,
-    Product product,
+    int productInStock,
   ) async {
     final success = await cartService.incrementQuantity(cartItemId);
     if (!success && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Only ${product.quantityInStock} available in stock'),
+          content: Text('Only $productInStock available in stock'),
           backgroundColor: AppColors.warning,
           duration: Duration(seconds: 2),
         ),
@@ -628,15 +634,16 @@ class _CartScreenState extends State<CartScreen> {
     setState(() => _selectedAddress = selectedAddress);
 
     // Step 2: Re-validate stock availability before proceeding
-    for (var i = 0; i < cartService.cartItems.length; i++) {
-      final cartItem = cartService.cartItems[i];
-      final product = cartService.cartProducts[i];
+    for (var cartItem in cartService.cartItems) {
+      final productInStock = _parseInt(cartItem['product_in_stock']);
+      final productName = cartItem['product_name'] ?? 'Unknown Product';
+      final quantity = _parseInt(cartItem['quantity']);
 
-      if (product.quantityInStock <= 0) {
+      if (productInStock <= 0) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              '${product.name} is out of stock. Please remove it from cart.',
+              '$productName is out of stock. Please remove it from cart.',
             ),
             duration: Duration(seconds: 3),
             backgroundColor: AppColors.error,
@@ -645,11 +652,11 @@ class _CartScreenState extends State<CartScreen> {
         return;
       }
 
-      if (cartItem.quantity > product.quantityInStock) {
+      if (quantity > productInStock) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'Only ${product.quantityInStock} of ${product.name} available. Please adjust quantity.',
+              'Only $productInStock of $productName available. Please adjust quantity.',
             ),
             duration: Duration(seconds: 3),
             backgroundColor: AppColors.warning,
@@ -665,7 +672,6 @@ class _CartScreenState extends State<CartScreen> {
       MaterialPageRoute(
         builder: (context) => PaymentScreen(
           cartItems: cartService.cartItems,
-          cartProducts: cartService.cartProducts,
           subtotal: cartService.subtotal,
           tax: cartService.tax,
           shippingCost: cartService.shippingCost,
@@ -688,13 +694,11 @@ class _CartScreenState extends State<CartScreen> {
 
       // Convert cart items to order items
       final orderItems = cartService.cartItems.map((cartItem) {
-        final product =
-            cartService.cartProducts[cartService.cartItems.indexOf(cartItem)];
         return OrderItem(
           orderId: 0, // Will be set by backend
-          productId: product.id!,
-          quantity: cartItem.quantity,
-          priceAtPurchase: cartItem.priceAtAdd,
+          productId: cartItem['product_id'],
+          quantity: _parseInt(cartItem['quantity']),
+          priceAtPurchase: _parseDouble(cartItem['price_at_add']),
         );
       }).toList();
 

@@ -66,6 +66,7 @@ const userRoutes = require('./routes/userRoutes');
 const orderRoutes = require('./routes/orderRoutes');
 const addressRoutes = require('./routes/addressRoutes');
 const reviewRoutes = require('./routes/reviewRoutes');
+const cartRoutes = require('./routes/cartRoutes');
 
 // Use routes
 app.use('/api/products', productRoutes);
@@ -73,6 +74,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/addresses', addressRoutes);
 app.use('/api/reviews', reviewRoutes);
+app.use('/api/cart', cartRoutes);
 
 // 404 handler for API routes only
 app.use((req, res, next) => {

@@ -36,15 +36,12 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   Future<void> _addToCart() async {
     // Get the cart service from Provider
     final cartService = Provider.of<CartService>(context, listen: false);
-    final availableStock = cartService.getAvailableStock(widget.product);
 
-    // Validate stock before adding to cart
-    if (availableStock <= 0) {
+    // Frontend validation for better UX (backend also validates)
+    if (widget.product.quantityInStock <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-            '${widget.product.name} is currently out of stock or all items are in your cart',
-          ),
+          content: Text('${widget.product.name} is currently out of stock'),
           duration: Duration(seconds: 2),
           backgroundColor: AppColors.error,
         ),
@@ -52,11 +49,11 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       return;
     }
 
-    if (quantity > availableStock) {
+    if (quantity > widget.product.quantityInStock) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Only $availableStock items available (${cartService.getProductQuantity(widget.product.id ?? 0)} already in cart)',
+            'Only ${widget.product.quantityInStock} items available',
           ),
           duration: Duration(seconds: 2),
           backgroundColor: AppColors.warning,
@@ -67,7 +64,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
     // Add product to cart with selected quantity
     final success = await cartService.addToCart(
-      product: widget.product,
+      productId: widget.product.id!,
       quantity: quantity,
     );
 
@@ -110,10 +107,11 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final cartService = Provider.of<CartService>(context);
-    final availableStock = cartService.getAvailableStock(widget.product);
     final quantityInCart = cartService.getProductQuantity(
       widget.product.id ?? 0,
     );
+    // Calculate available stock: total stock minus what's already in cart
+    final availableStock = widget.product.quantityInStock - quantityInCart;
 
     return Scaffold(
       appBar: AppBar(

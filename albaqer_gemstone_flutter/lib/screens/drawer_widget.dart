@@ -1,7 +1,10 @@
+import 'package:albaqer_gemstone_flutter/screens/home_screen.dart';
 import 'package:albaqer_gemstone_flutter/screens/login_screen.dart';
 import 'package:albaqer_gemstone_flutter/screens/admin_products_screen.dart';
 import 'package:albaqer_gemstone_flutter/screens/admin_orders_screen.dart';
+import 'package:albaqer_gemstone_flutter/screens/admin_users_screen.dart';
 import 'package:albaqer_gemstone_flutter/screens/chatbot_screen.dart';
+import 'package:albaqer_gemstone_flutter/screens/tabs_screen.dart';
 import 'package:albaqer_gemstone_flutter/screens/wishlist_screen.dart';
 import 'package:albaqer_gemstone_flutter/screens/dashboard_screen.dart';
 import 'package:albaqer_gemstone_flutter/screens/manager_dashboard_screen.dart';
@@ -10,7 +13,9 @@ import 'package:albaqer_gemstone_flutter/screens/delivery_people_screen.dart';
 import 'package:albaqer_gemstone_flutter/screens/delivery_dashboard_screen.dart';
 import 'package:albaqer_gemstone_flutter/screens/delivery_orders_screen.dart';
 import 'package:albaqer_gemstone_flutter/services/auth_service.dart';
+import 'package:albaqer_gemstone_flutter/services/cart_service.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../config/app_theme.dart';
 
 /// =======================================================================
@@ -55,6 +60,10 @@ class _DrawerWidgetState extends State<DrawerWidget> {
 
   /// Logout user
   Future<void> _logout() async {
+    // Clear cart from local state (cart persists in backend database)
+    final cartService = Provider.of<CartService>(context, listen: false);
+    cartService.clearLocalCart(); // Clear without API call
+
     final authService = AuthService();
     await authService.logout();
 
@@ -123,6 +132,12 @@ class _DrawerWidgetState extends State<DrawerWidget> {
                   title: Text('Home'),
                   onTap: () {
                     Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const TabsScreen(),
+                      ),
+                    );
                   },
                 ),
 
@@ -341,6 +356,22 @@ class _DrawerWidgetState extends State<DrawerWidget> {
                         context,
                         MaterialPageRoute(
                           builder: (context) => AdminProductsScreen(),
+                        ),
+                      );
+                    },
+                  ),
+
+                  // Manage Users
+                  ListTile(
+                    leading: Icon(Icons.people, color: Colors.green),
+                    title: Text('Manage Users'),
+                    subtitle: Text('Assign roles to users'),
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const AdminUsersScreen(),
                         ),
                       );
                     },

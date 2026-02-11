@@ -205,7 +205,7 @@ const assignRoleToUser = async (req, res) => {
         const { role } = req.body;
 
         // Validate role
-        const validRoles = ['customer', 'manager', 'delivery_man', 'admin'];
+        const validRoles = ['user', 'manager', 'delivery_man', 'admin'];
         if (!role || !validRoles.includes(role)) {
             return res.status(400).json({
                 success: false,

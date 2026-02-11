@@ -1,14 +1,11 @@
 import 'package:flutter/material.dart';
-import '../models/cart_item.dart';
-import '../models/product.dart';
 import '../models/address.dart';
 import '../config/app_theme.dart';
 
 /// Payment Screen - Simulates payment processing
 /// Shows order summary and payment method selection
 class PaymentScreen extends StatefulWidget {
-  final List<CartItem> cartItems;
-  final List<Product> cartProducts;
+  final List<Map<String, dynamic>> cartItems;
   final double subtotal;
   final double tax;
   final double shippingCost;
@@ -18,7 +15,6 @@ class PaymentScreen extends StatefulWidget {
   const PaymentScreen({
     Key? key,
     required this.cartItems,
-    required this.cartProducts,
     required this.subtotal,
     required this.tax,
     required this.shippingCost,
@@ -33,6 +29,21 @@ class PaymentScreen extends StatefulWidget {
 class _PaymentScreenState extends State<PaymentScreen> {
   String _selectedPaymentMethod = 'cash'; // 'cash' or 'card'
   bool _isProcessing = false;
+
+  // Helpers for parsing PostgreSQL numeric values
+  double _parseDouble(dynamic value) {
+    if (value is double) return value;
+    if (value is int) return value.toDouble();
+    if (value is String) return double.tryParse(value) ?? 0.0;
+    return 0.0;
+  }
+
+  int _parseInt(dynamic value) {
+    if (value is int) return value;
+    if (value is double) return value.toInt();
+    if (value is String) return int.tryParse(value) ?? 0;
+    return 0;
+  }
 
   // Card form fields (for simulation only)
   final _cardNumberController = TextEditingController();
@@ -73,10 +84,13 @@ class _PaymentScreenState extends State<PaymentScreen> {
                   SizedBox(height: 16),
 
                   // Items List
-                  ...widget.cartItems.asMap().entries.map((entry) {
-                    final index = entry.key;
-                    final item = entry.value;
-                    final product = widget.cartProducts[index];
+                  ...widget.cartItems.map((item) {
+                    final productName =
+                        item['product_name'] ?? 'Unknown Product';
+                    final quantity = _parseInt(item['quantity']);
+                    final priceAtAdd = _parseDouble(item['price_at_add']);
+                    final itemTotal = quantity * priceAtAdd;
+                    final productImage = item['product_image'];
 
                     return Padding(
                       padding: EdgeInsets.only(bottom: 12),
@@ -86,13 +100,27 @@ class _PaymentScreenState extends State<PaymentScreen> {
                           // Product Image
                           ClipRRect(
                             borderRadius: BorderRadius.circular(8),
-                            child: Image.network(
-                              product.imageUrl ?? '',
-                              width: 60,
-                              height: 60,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) =>
-                                  Container(
+                            child: productImage != null
+                                ? Image.network(
+                                    productImage.startsWith('http')
+                                        ? productImage
+                                        : 'http://192.168.1.4:3000$productImage',
+                                    width: 60,
+                                    height: 60,
+                                    fit: BoxFit.cover,
+                                    errorBuilder:
+                                        (context, error, stackTrace) =>
+                                            Container(
+                                              width: 60,
+                                              height: 60,
+                                              color: Colors.grey[300],
+                                              child: Icon(
+                                                Icons.image,
+                                                color: Colors.grey,
+                                              ),
+                                            ),
+                                  )
+                                : Container(
                                     width: 60,
                                     height: 60,
                                     color: Colors.grey[300],
@@ -101,7 +129,6 @@ class _PaymentScreenState extends State<PaymentScreen> {
                                       color: Colors.grey,
                                     ),
                                   ),
-                            ),
                           ),
                           SizedBox(width: 12),
 
@@ -111,12 +138,12 @@ class _PaymentScreenState extends State<PaymentScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  product.name,
+                                  productName,
                                   style: TextStyle(fontWeight: FontWeight.w500),
                                 ),
                                 SizedBox(height: 4),
                                 Text(
-                                  'Qty: ${item.quantity}',
+                                  'Qty: $quantity',
                                   style: TextStyle(
                                     color: Colors.grey[600],
                                     fontSize: 13,
@@ -128,7 +155,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
                           // Price
                           Text(
-                            '\$${(item.priceAtAdd * item.quantity).toStringAsFixed(2)}',
+                            '\$${itemTotal.toStringAsFixed(2)}',
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
                               color: AppColors.primary,

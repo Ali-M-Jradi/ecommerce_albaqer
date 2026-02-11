@@ -49,7 +49,8 @@ class ProductService {
 
       if (response.statusCode == 201) {
         // Success - backend created the product
-        final data = jsonDecode(response.body);
+        final responseData = jsonDecode(response.body);
+        final data = responseData['data'] ?? responseData;
         return Product(
           id: data['id'],
           name: data['name'],
@@ -58,7 +59,7 @@ class ProductService {
           basePrice: _toDouble(data['base_price']),
           rating: _toDouble(data['rating']),
           totalReviews: data['total_reviews'] ?? 0,
-          quantityInStock: data['quantity_in_stock'],
+          quantityInStock: data['quantity_in_stock'] ?? 0,
           imageUrl: data['image_url'],
           isAvailable: data['is_available'] ?? true,
           createdAt: data['created_at'] != null
