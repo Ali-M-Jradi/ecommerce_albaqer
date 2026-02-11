@@ -82,7 +82,78 @@ const createOrder = async (req, res) => {
     try {
         await client.query('BEGIN');
 
-        // Create the order
+        console.log(`📦 Creating order for user #${req.user.id}...`);
+
+        // STEP 1: Validate stock availability for all items BEFORE creating order
+        if (order_items && Array.isArray(order_items) && order_items.length > 0) {
+            console.log(`🔍 Validating stock for ${order_items.length} items...`);
+
+            const stockIssues = [];
+            const lowStockWarnings = [];
+
+            for (const item of order_items) {
+                // Check current stock
+                const stockCheck = await client.query(
+                    `SELECT id, name, quantity_in_stock 
+                     FROM products 
+                     WHERE id = $1`,
+                    [item.product_id]
+                );
+
+                if (stockCheck.rows.length === 0) {
+                    stockIssues.push({
+                        product_id: item.product_id,
+                        issue: 'Product not found'
+                    });
+                    continue;
+                }
+
+                const product = stockCheck.rows[0];
+                const availableStock = product.quantity_in_stock;
+
+                // Check if sufficient stock
+                if (availableStock < item.quantity) {
+                    console.error(`❌ Insufficient stock for product #${item.product_id}: requested ${item.quantity}, available ${availableStock}`);
+                    stockIssues.push({
+                        product_id: item.product_id,
+                        product_name: product.name,
+                        requested: item.quantity,
+                        available: availableStock,
+                        issue: 'Insufficient stock'
+                    });
+                }
+
+                // Check for low stock warning (after order, stock would be below 5)
+                if (availableStock - item.quantity < 5 && availableStock - item.quantity >= 0) {
+                    lowStockWarnings.push({
+                        product_id: item.product_id,
+                        product_name: product.name,
+                        remaining_after_order: availableStock - item.quantity
+                    });
+                }
+            }
+
+            // If any stock issues, rollback and return error
+            if (stockIssues.length > 0) {
+                await client.query('ROLLBACK');
+                console.error(`❌ Order creation failed: Stock validation errors`);
+                return res.status(400).json({
+                    success: false,
+                    message: 'Cannot create order: Insufficient stock for some items',
+                    stock_issues: stockIssues
+                });
+            }
+
+            // Log low stock warnings
+            if (lowStockWarnings.length > 0) {
+                console.warn(`⚠️  Low stock warning: ${lowStockWarnings.length} products will be low after this order`);
+                lowStockWarnings.forEach(warning => {
+                    console.warn(`   - ${warning.product_name} (ID: ${warning.product_id}): ${warning.remaining_after_order} units remaining`);
+                });
+            }
+        }
+
+        // STEP 2: Create the order
         const orderResult = await client.query(
             `INSERT INTO orders (user_id, order_number, total_amount, tax_amount, shipping_cost, 
                                 discount_amount, shipping_address_id, billing_address_id, notes)
@@ -102,10 +173,12 @@ const createOrder = async (req, res) => {
         );
 
         const order = orderResult.rows[0];
+        console.log(`✅ Order #${order.id} created`);
 
-        // Create order items if provided
+        // STEP 3: Create order items and update stock
         if (order_items && Array.isArray(order_items) && order_items.length > 0) {
             for (const item of order_items) {
+                // Insert order item
                 await client.query(
                     `INSERT INTO order_items (order_id, product_id, quantity, price_at_purchase)
                      VALUES ($1, $2, $3, $4)`,
@@ -113,16 +186,27 @@ const createOrder = async (req, res) => {
                 );
 
                 // Update product inventory (reduce stock)
-                await client.query(
+                const stockUpdateResult = await client.query(
                     `UPDATE products 
-                     SET quantity_in_stock = quantity_in_stock - $1
-                     WHERE id = $2 AND quantity_in_stock >= $1`,
+                     SET quantity_in_stock = quantity_in_stock - $1,
+                         updated_at = CURRENT_TIMESTAMP
+                     WHERE id = $2 AND quantity_in_stock >= $1
+                     RETURNING id, name, quantity_in_stock`,
                     [item.quantity, item.product_id]
                 );
+
+                if (stockUpdateResult.rows.length === 0) {
+                    // This shouldn't happen due to validation, but safety check
+                    throw new Error(`Failed to update stock for product #${item.product_id}`);
+                }
+
+                const updatedProduct = stockUpdateResult.rows[0];
+                console.log(`📉 Stock updated for "${updatedProduct.name}": ${updatedProduct.quantity_in_stock} units remaining`);
             }
         }
 
         await client.query('COMMIT');
+        console.log(`✅ Order #${order.id} completed successfully`);
 
         res.status(201).json({
             success: true,
@@ -131,7 +215,7 @@ const createOrder = async (req, res) => {
         });
     } catch (error) {
         await client.query('ROLLBACK');
-        console.error('Error creating order:', error);
+        console.error('❌ Error creating order:', error);
         res.status(500).json({
             success: false,
             message: 'Failed to create order',
@@ -149,26 +233,116 @@ const updateOrderStatus = async (req, res) => {
     const { id } = req.params;
     const { status, tracking_number } = req.body;
 
-    const result = await pool.query(
-        `UPDATE orders 
-         SET status = $1, tracking_number = $2, updated_at = CURRENT_TIMESTAMP
-         WHERE id = $3
-         RETURNING *`,
-        [status, tracking_number, id]
-    );
-
-    if (result.rowCount === 0) {
-        return res.status(404).json({
+    // Validate status value
+    const validStatuses = ['pending', 'confirmed', 'assigned', 'in_transit', 'delivered', 'cancelled'];
+    if (!validStatuses.includes(status)) {
+        console.error(`❌ Invalid status attempted: "${status}". Valid statuses: ${validStatuses.join(', ')}`);
+        return res.status(400).json({
             success: false,
-            message: 'Order not found'
+            message: `Invalid status value. Must be one of: ${validStatuses.join(', ')}`,
+            validStatuses: validStatuses
         });
     }
 
-    res.json({
-        success: true,
-        message: 'Order status updated successfully',
-        data: result.rows[0]
-    });
+    const client = await pool.connect();
+
+    try {
+        await client.query('BEGIN');
+
+        console.log(`📝 Updating order #${id} status to: ${status}`);
+
+        // Get current order status and items
+        const orderCheck = await client.query(
+            `SELECT id, status, user_id FROM orders WHERE id = $1`,
+            [id]
+        );
+
+        if (orderCheck.rows.length === 0) {
+            await client.query('ROLLBACK');
+            console.error(`❌ Order #${id} not found for status update`);
+            return res.status(404).json({
+                success: false,
+                message: 'Order not found'
+            });
+        }
+
+        const currentOrder = orderCheck.rows[0];
+        const previousStatus = currentOrder.status;
+
+        // STOCK RESTORATION: If changing to 'cancelled' from a non-cancelled status
+        if (status === 'cancelled' && previousStatus !== 'cancelled') {
+            console.log(`🔄 Order being cancelled - restoring stock...`);
+
+            // Get all order items
+            const orderItems = await client.query(
+                `SELECT oi.product_id, oi.quantity, p.name 
+                 FROM order_items oi
+                 JOIN products p ON oi.product_id = p.id
+                 WHERE oi.order_id = $1`,
+                [id]
+            );
+
+            // Restore stock for each item
+            for (const item of orderItems.rows) {
+                const restoreResult = await client.query(
+                    `UPDATE products 
+                     SET quantity_in_stock = quantity_in_stock + $1,
+                         updated_at = CURRENT_TIMESTAMP
+                     WHERE id = $2
+                     RETURNING id, name, quantity_in_stock`,
+                    [item.quantity, item.product_id]
+                );
+
+                if (restoreResult.rows.length > 0) {
+                    const restoredProduct = restoreResult.rows[0];
+                    console.log(`📈 Stock restored for "${restoredProduct.name}": +${item.quantity} units (now ${restoredProduct.quantity_in_stock})`);
+                }
+            }
+
+            console.log(`✅ Stock restoration completed for order #${id}`);
+        }
+
+        // Update the order status
+        const result = await client.query(
+            `UPDATE orders 
+             SET status = $1, tracking_number = $2, updated_at = CURRENT_TIMESTAMP
+             WHERE id = $3
+             RETURNING *`,
+            [status, tracking_number, id]
+        );
+
+        await client.query('COMMIT');
+
+        console.log(`✅ Order #${id} status updated: ${previousStatus} → ${status}`);
+        res.json({
+            success: true,
+            message: 'Order status updated successfully',
+            data: result.rows[0],
+            stock_restored: status === 'cancelled' && previousStatus !== 'cancelled'
+        });
+    } catch (error) {
+        await client.query('ROLLBACK');
+        console.error(`❌ Error updating order #${id} status:`, error);
+
+        // Check for constraint violation
+        if (error.code === '23514') { // PostgreSQL CHECK constraint violation
+            return res.status(400).json({
+                success: false,
+                message: `Invalid status value. Must be one of: ${validStatuses.join(', ')}`,
+                error: 'Status constraint violation',
+                validStatuses: validStatuses
+            });
+        }
+
+        // Generic error
+        return res.status(500).json({
+            success: false,
+            message: 'Failed to update order status',
+            error: error.message
+        });
+    } finally {
+        client.release();
+    }
 };
 
 // @desc    Delete order
@@ -176,19 +350,76 @@ const updateOrderStatus = async (req, res) => {
 // @access  Private/Admin
 const deleteOrder = async (req, res) => {
     const { id } = req.params;
-    const result = await pool.query('DELETE FROM orders WHERE id = $1 RETURNING id', [id]);
+    const client = await pool.connect();
 
-    if (result.rowCount === 0) {
-        return res.status(404).json({
-            success: false,
-            message: 'Order not found'
+    try {
+        await client.query('BEGIN');
+        console.log(`🗑️  Deleting order #${id}...`);
+
+        // Get order details before deletion
+        const orderCheck = await client.query(
+            `SELECT id, status FROM orders WHERE id = $1`,
+            [id]
+        );
+
+        if (orderCheck.rows.length === 0) {
+            await client.query('ROLLBACK');
+            return res.status(404).json({
+                success: false,
+                message: 'Order not found'
+            });
+        }
+
+        const order = orderCheck.rows[0];
+
+        // If order is not cancelled, restore stock before deletion
+        if (order.status !== 'cancelled') {
+            console.log(`🔄 Restoring stock before order deletion...`);
+
+            // Get all order items
+            const orderItems = await client.query(
+                `SELECT oi.product_id, oi.quantity, p.name 
+                 FROM order_items oi
+                 JOIN products p ON oi.product_id = p.id
+                 WHERE oi.order_id = $1`,
+                [id]
+            );
+
+            // Restore stock for each item
+            for (const item of orderItems.rows) {
+                await client.query(
+                    `UPDATE products 
+                     SET quantity_in_stock = quantity_in_stock + $1,
+                         updated_at = CURRENT_TIMESTAMP
+                     WHERE id = $2`,
+                    [item.quantity, item.product_id]
+                );
+                console.log(`📈 Stock restored for "${item.name}": +${item.quantity} units`);
+            }
+        }
+
+        // Delete the order (cascade will delete order_items)
+        const result = await client.query('DELETE FROM orders WHERE id = $1 RETURNING id', [id]);
+
+        await client.query('COMMIT');
+        console.log(`✅ Order #${id} deleted successfully`);
+
+        res.json({
+            success: true,
+            message: 'Order deleted successfully',
+            stock_restored: order.status !== 'cancelled'
         });
+    } catch (error) {
+        await client.query('ROLLBACK');
+        console.error(`❌ Error deleting order #${id}:`, error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to delete order',
+            error: error.message
+        });
+    } finally {
+        client.release();
     }
-
-    res.json({
-        success: true,
-        message: 'Order deleted successfully'
-    });
 };
 
 // ========== MANAGER FUNCTIONS ==========
@@ -390,6 +621,72 @@ const unassignOrderFromDelivery = async (req, res) => {
     }
 };
 
+// ========== INVENTORY MONITORING ==========
+
+// @desc    Get products with low stock (for inventory management)
+// @route   GET /api/orders/inventory/low-stock
+// @access  Private/Admin
+const getLowStockProducts = async (req, res) => {
+    try {
+        const threshold = parseInt(req.query.threshold) || 10; // Default threshold: 10 units
+
+        console.log(`📊 Checking for products with stock below ${threshold} units...`);
+
+        const result = await pool.query(
+            `SELECT 
+                id,
+                name,
+                type,
+                quantity_in_stock,
+                price,
+                image_url,
+                CASE 
+                    WHEN quantity_in_stock = 0 THEN 'out_of_stock'
+                    WHEN quantity_in_stock < 5 THEN 'critical'
+                    WHEN quantity_in_stock < 10 THEN 'low'
+                    ELSE 'warning'
+                END as stock_level
+             FROM products 
+             WHERE quantity_in_stock < $1
+             ORDER BY quantity_in_stock ASC, name ASC`,
+            [threshold]
+        );
+
+        // Categorize products by stock level
+        const stockReport = {
+            out_of_stock: result.rows.filter(p => p.quantity_in_stock === 0),
+            critical: result.rows.filter(p => p.quantity_in_stock > 0 && p.quantity_in_stock < 5),
+            low: result.rows.filter(p => p.quantity_in_stock >= 5 && p.quantity_in_stock < 10),
+            warning: result.rows.filter(p => p.quantity_in_stock >= 10 && p.quantity_in_stock < threshold)
+        };
+
+        const summary = {
+            total_low_stock_products: result.rows.length,
+            out_of_stock_count: stockReport.out_of_stock.length,
+            critical_count: stockReport.critical.length,
+            low_count: stockReport.low.length,
+            warning_count: stockReport.warning.length,
+            threshold: threshold
+        };
+
+        console.log(`📋 Low stock summary:`, summary);
+
+        res.json({
+            success: true,
+            summary: summary,
+            products: stockReport,
+            all_products: result.rows
+        });
+    } catch (error) {
+        console.error('❌ Error fetching low stock products:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to fetch low stock products',
+            error: error.message
+        });
+    }
+};
+
 module.exports = {
     getAllOrders,
     getMyOrders,
@@ -402,5 +699,7 @@ module.exports = {
     getDeliveryMen,
     assignOrderToDelivery,
     getDeliveryManOrders,
-    unassignOrderFromDelivery
+    unassignOrderFromDelivery,
+    // Inventory monitoring
+    getLowStockProducts
 };

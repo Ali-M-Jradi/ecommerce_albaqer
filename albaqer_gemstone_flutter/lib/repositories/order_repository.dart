@@ -170,7 +170,7 @@ class OrderRepository {
   /// - User cancelling pending orders
   /// - Order management screen
   ///
-  /// Business Rule: Only pending/processing orders can be cancelled
+  /// Business Rule: Only pending/confirmed/assigned orders can be cancelled
   Future<bool> cancelOrder(int orderId) async {
     print('🚫 OrderRepository: Cancelling order #$orderId...');
 
@@ -184,7 +184,7 @@ class OrderRepository {
       }
 
       // Check if order can be cancelled
-      if (order.status == 'shipped' || order.status == 'delivered') {
+      if (order.status == 'in_transit' || order.status == 'delivered') {
         print('⚠️ Cannot cancel order - already ${order.status}');
         throw Exception('Cannot cancel order that has been ${order.status}');
       }
@@ -239,10 +239,9 @@ class OrderRepository {
         'pendingOrders': orders.where((o) => o.status == 'pending').length,
         'completedOrders': orders.where((o) => o.status == 'delivered').length,
         'cancelledOrders': orders.where((o) => o.status == 'cancelled').length,
-        'processingOrders': orders
-            .where((o) => o.status == 'processing')
-            .length,
-        'shippedOrders': orders.where((o) => o.status == 'shipped').length,
+        'confirmedOrders': orders.where((o) => o.status == 'confirmed').length,
+        'assignedOrders': orders.where((o) => o.status == 'assigned').length,
+        'inTransitOrders': orders.where((o) => o.status == 'in_transit').length,
       };
 
       print('✅ Statistics calculated: ${stats['totalOrders']} orders');
@@ -255,8 +254,9 @@ class OrderRepository {
         'pendingOrders': 0,
         'completedOrders': 0,
         'cancelledOrders': 0,
-        'processingOrders': 0,
-        'shippedOrders': 0,
+        'confirmedOrders': 0,
+        'assignedOrders': 0,
+        'inTransitOrders': 0,
       };
     }
   }

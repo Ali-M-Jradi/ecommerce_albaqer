@@ -1,7 +1,6 @@
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
-const os = require('os');
 const path = require('path');
 const pool = require('./db/connection');
 const { errorHandler, notFound } = require('./middleware/errorHandler');
@@ -11,6 +10,9 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// ⚙️ CONFIGURATION - Server IP (must match Flutter api_config.dart)
+const SERVER_IP = '192.168.0.106';  // ✅ Your real Wi-Fi network
 
 // Middleware
 app.use(cors());
@@ -62,11 +64,13 @@ app.get('/api/health', (req, res) => {
 const productRoutes = require('./routes/productRoutes');
 const userRoutes = require('./routes/userRoutes');
 const orderRoutes = require('./routes/orderRoutes');
+const addressRoutes = require('./routes/addressRoutes');
 
 // Use routes
 app.use('/api/products', productRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/orders', orderRoutes);
+app.use('/api/addresses', addressRoutes);
 
 // 404 handler for API routes only
 app.use((req, res, next) => {
@@ -80,23 +84,9 @@ app.use((req, res, next) => {
 // Error handling middleware
 app.use(errorHandler);
 
-// Helper function to get local IP address
-function getLocalIpAddress() {
-    const interfaces = os.networkInterfaces();
-    for (const name of Object.keys(interfaces)) {
-        for (const iface of interfaces[name]) {
-            // Skip internal and non-IPv4 addresses
-            if (iface.family === 'IPv4' && !iface.internal) {
-                return iface.address;
-            }
-        }
-    }
-    return 'localhost';
-}
-
 // Start server
 app.listen(PORT, '0.0.0.0', () => {
-    const localIp = getLocalIpAddress();
+    const localIp = SERVER_IP;
 
     console.log('═══════════════════════════════════════════════════════');
     console.log('🚀 AlBaqer Gemstone Backend Server');

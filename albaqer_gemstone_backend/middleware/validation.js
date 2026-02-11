@@ -88,6 +88,31 @@ const validateOrder = [
     validate
 ];
 
+// Address validation rules
+const validateAddress = [
+    body('address_type')
+        .trim()
+        .notEmpty().withMessage('Address type is required')
+        .isIn(['shipping', 'billing', 'both'])
+        .withMessage('Address type must be shipping, billing, or both'),
+    body('street_address')
+        .trim()
+        .notEmpty().withMessage('Street address is required')
+        .isLength({ min: 5, max: 500 }).withMessage('Street address must be between 5 and 500 characters'),
+    body('city')
+        .trim()
+        .notEmpty().withMessage('City is required')
+        .isLength({ min: 2, max: 100 }).withMessage('City must be between 2 and 100 characters'),
+    body('country')
+        .trim()
+        .notEmpty().withMessage('Country is required')
+        .isLength({ min: 2, max: 100 }).withMessage('Country must be between 2 and 100 characters'),
+    body('is_default')
+        .optional()
+        .isBoolean().withMessage('is_default must be a boolean'),
+    validate
+];
+
 // ID parameter validation
 const validateId = [
     param('id')
@@ -100,5 +125,6 @@ module.exports = {
     validateUserRegister,
     validateUserLogin,
     validateOrder,
+    validateAddress,
     validateId
 };

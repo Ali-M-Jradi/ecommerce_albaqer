@@ -94,6 +94,7 @@ class OrderService {
     required double taxAmount,
     required double shippingCost,
     required List<OrderItem> orderItems,
+    int? shippingAddressId,
     String? notes,
   }) async {
     try {
@@ -119,6 +120,7 @@ class OrderService {
         'tax_amount': taxAmount,
         'shipping_cost': shippingCost,
         'discount_amount': 0.0,
+        'shipping_address_id': shippingAddressId,
         'notes': notes,
         'order_items': orderItems.map((item) => item.toJson()).toList(),
       };
@@ -167,6 +169,22 @@ class OrderService {
               ? DateTime.parse(data['updated_at'])
               : null,
         );
+      } else if (response.statusCode == 400) {
+        // Stock validation error - parse detailed error
+        final jsonResponse = jsonDecode(response.body);
+        final stockIssues = jsonResponse['stock_issues'] as List<dynamic>?;
+
+        if (stockIssues != null && stockIssues.isNotEmpty) {
+          print('❌ Stock validation failed:');
+          for (var issue in stockIssues) {
+            print(
+              '   - ${issue['product_name']}: requested ${issue['requested']}, available ${issue['available']}',
+            );
+          }
+        }
+
+        print('Response: ${response.body}');
+        return null;
       } else {
         print('❌ Failed to create order: ${response.statusCode}');
         print('Response: ${response.body}');
@@ -454,7 +472,24 @@ class OrderService {
         return false;
       }
 
+      // Validate status value on client side
+      const validStatuses = [
+        'pending',
+        'confirmed',
+        'assigned',
+        'in_transit',
+        'delivered',
+        'cancelled',
+      ];
+      if (!validStatuses.contains(newStatus)) {
+        print('❌ Invalid status value: $newStatus');
+        print('   Valid statuses: ${validStatuses.join(', ')}');
+        return false;
+      }
+
       final baseUrl = ApiConfig.baseUrl;
+      print('📡 Updating order #$orderId status to: $newStatus');
+
       final response = await http.put(
         Uri.parse('$baseUrl/orders/$orderId/status'),
         headers: {
@@ -467,6 +502,22 @@ class OrderService {
       if (response.statusCode == 200) {
         print('✅ Order status updated to: $newStatus');
         return true;
+      } else if (response.statusCode == 400) {
+        // Bad request - invalid status or constraint violation
+        final responseData = jsonDecode(response.body);
+        print('❌ Invalid status update request: ${responseData['message']}');
+        if (responseData['validStatuses'] != null) {
+          print(
+            '   Valid statuses: ${responseData['validStatuses'].join(', ')}',
+          );
+        }
+        return false;
+      } else if (response.statusCode == 404) {
+        print('❌ Order not found');
+        return false;
+      } else if (response.statusCode == 403) {
+        print('❌ Not authorized to update order status (admin only)');
+        return false;
       } else {
         print('❌ Failed to update order status: ${response.statusCode}');
         print('Response: ${response.body}');

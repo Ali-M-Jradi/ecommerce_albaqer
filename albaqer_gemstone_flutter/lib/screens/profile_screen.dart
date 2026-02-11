@@ -5,6 +5,7 @@ import '../services/auth_service.dart';
 import '../services/order_service.dart';
 import '../models/order.dart';
 import 'login_screen.dart';
+import 'addresses_screen.dart';
 
 /// Profile Screen - Shows user info, order history, and account settings
 class ProfileScreen extends StatefulWidget {
@@ -241,12 +242,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
       case 'delivered':
         statusColor = AppColors.success;
         break;
-      case 'processing':
+      case 'confirmed':
+      case 'assigned':
+      case 'in_transit':
         statusColor = AppColors.warning;
         break;
       case 'cancelled':
         statusColor = AppColors.error;
         break;
+      case 'pending':
       default:
         statusColor = AppColors.info;
     }
@@ -499,8 +503,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
           icon: Icons.location_on,
           title: 'Shipping Addresses',
           onTap: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Address management coming soon!')),
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => AddressesScreen()),
             );
           },
         ),

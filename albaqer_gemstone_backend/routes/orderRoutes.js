@@ -12,7 +12,9 @@ const {
     getDeliveryMen,
     assignOrderToDelivery,
     getDeliveryManOrders,
-    unassignOrderFromDelivery
+    unassignOrderFromDelivery,
+    // Inventory monitoring
+    getLowStockProducts
 } = require('../controllers/orderController');
 const { protect, admin, manager } = require('../middleware/auth');
 const { validateOrder, validateId } = require('../middleware/validation');
@@ -20,6 +22,7 @@ const { asyncHandler } = require('../middleware/errorHandler');
 
 // Admin routes (must come before specific routes)
 router.get('/all', protect, admin, asyncHandler(getAllOrders));
+router.get('/inventory/low-stock', protect, admin, asyncHandler(getLowStockProducts));
 
 // Manager routes
 router.get('/manager/pending', protect, manager, asyncHandler(getPendingOrders));

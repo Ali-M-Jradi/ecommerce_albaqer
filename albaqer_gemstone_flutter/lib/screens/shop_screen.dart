@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../models/product.dart';
 import '../services/data_manager.dart';
 import '../services/wishlist_service.dart';
+import '../services/cart_service.dart';
 import 'product_detail_screen.dart';
 import '../config/app_theme.dart';
 
@@ -29,12 +30,34 @@ class _ShopScreenState extends State<ShopScreen> {
   String _sortBy = 'name'; // name, price_low, price_high, newest
   bool _isLoading = true;
   bool _showFilters = false;
+  bool _hasCheckedCacheOnResume =
+      false; // Track if we've checked cache on resume
 
   @override
   void initState() {
     super.initState();
     _loadData();
     _searchController.addListener(_onSearchChanged);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Check if cache is stale when screen becomes visible (after navigation)
+    if (_hasCheckedCacheOnResume) {
+      _checkAndReloadIfCacheStale();
+    }
+    _hasCheckedCacheOnResume = true;
+  }
+
+  /// Check if product cache is stale and reload if needed
+  Future<void> _checkAndReloadIfCacheStale() async {
+    final dataManager = DataManager();
+    // If cache is not fresh, reload products
+    if (!dataManager.isCacheFresh() && !_isLoading) {
+      print('🔄 Cache is stale, reloading products in shop screen...');
+      await _loadData();
+    }
   }
 
   @override
@@ -52,7 +75,7 @@ class _ShopScreenState extends State<ShopScreen> {
 
       // Load products and categories in parallel
       final results = await Future.wait([
-        dataManager.getProducts(),
+        dataManager.getProducts(), // Will auto-refresh if cache is stale
         dataManager.getCategoriesOfflineFirst(),
       ]);
 
@@ -392,26 +415,33 @@ class _ShopScreenState extends State<ShopScreen> {
   }
 
   Widget _buildProductsGrid() {
-    return RefreshIndicator(
-      onRefresh: _loadData,
-      child: GridView.builder(
-        padding: const EdgeInsets.all(16),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          childAspectRatio: 0.7,
-          crossAxisSpacing: 16,
-          mainAxisSpacing: 16,
-        ),
-        itemCount: _filteredProducts.length,
-        itemBuilder: (context, index) {
-          final product = _filteredProducts[index];
-          return _buildProductCard(product);
-        },
-      ),
+    return Consumer<CartService>(
+      builder: (context, cartService, child) {
+        return RefreshIndicator(
+          onRefresh: _loadData,
+          child: GridView.builder(
+            padding: const EdgeInsets.all(16),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              childAspectRatio: 0.7,
+              crossAxisSpacing: 16,
+              mainAxisSpacing: 16,
+            ),
+            itemCount: _filteredProducts.length,
+            itemBuilder: (context, index) {
+              final product = _filteredProducts[index];
+              return _buildProductCard(product, cartService);
+            },
+          ),
+        );
+      },
     );
   }
 
-  Widget _buildProductCard(Product product) {
+  Widget _buildProductCard(Product product, CartService cartService) {
+    final availableStock = cartService.getAvailableStock(product);
+    final quantityInCart = cartService.getProductQuantity(product.id ?? 0);
+
     return GestureDetector(
       onTap: () {
         Navigator.push(
@@ -476,14 +506,16 @@ class _ShopScreenState extends State<ShopScreen> {
                                   ),
                                 ),
                           // Out of stock overlay
-                          if (product.quantityInStock == 0)
+                          if (availableStock == 0)
                             Container(
                               color: AppColors.primary.withOpacity(0.6),
-                              child: const Center(
+                              child: Center(
                                 child: Text(
-                                  'OUT OF\nSTOCK',
+                                  quantityInCart > 0
+                                      ? 'ALL IN\nCART'
+                                      : 'OUT OF\nSTOCK',
                                   textAlign: TextAlign.center,
-                                  style: TextStyle(
+                                  style: const TextStyle(
                                     color: AppColors.textOnPrimary,
                                     fontWeight: FontWeight.bold,
                                     fontSize: 16,
@@ -557,16 +589,16 @@ class _ShopScreenState extends State<ShopScreen> {
                           vertical: 4,
                         ),
                         decoration: BoxDecoration(
-                          color: product.quantityInStock == 0
+                          color: availableStock == 0
                               ? AppColors.stockLow
-                              : product.quantityInStock <= 5
+                              : availableStock <= 5
                               ? AppColors.stockMedium
                               : AppColors.stockHigh,
                           borderRadius: BorderRadius.circular(4),
                           border: Border.all(
-                            color: product.quantityInStock == 0
+                            color: availableStock == 0
                                 ? AppColors.stockLowText
-                                : product.quantityInStock <= 5
+                                : availableStock <= 5
                                 ? AppColors.stockMediumText
                                 : AppColors.stockHighText,
                             width: 1,
@@ -576,33 +608,37 @@ class _ShopScreenState extends State<ShopScreen> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Icon(
-                              product.quantityInStock == 0
+                              availableStock == 0
                                   ? Icons.cancel
-                                  : product.quantityInStock <= 5
+                                  : availableStock <= 5
                                   ? Icons.warning_amber_rounded
                                   : Icons.check_circle,
                               size: 12,
-                              color: product.quantityInStock == 0
+                              color: availableStock == 0
                                   ? AppColors.stockLowText
-                                  : product.quantityInStock <= 5
+                                  : availableStock <= 5
                                   ? AppColors.stockMediumText
                                   : AppColors.stockHighText,
                             ),
                             const SizedBox(width: 4),
-                            Text(
-                              product.quantityInStock == 0
-                                  ? 'Out of Stock'
-                                  : product.quantityInStock <= 5
-                                  ? 'Only ${product.quantityInStock} left'
-                                  : '${product.quantityInStock} in stock',
-                              style: TextStyle(
-                                fontSize: 11,
-                                color: product.quantityInStock == 0
-                                    ? AppColors.stockLowText
-                                    : product.quantityInStock <= 5
-                                    ? AppColors.stockMediumText
-                                    : AppColors.stockHighText,
-                                fontWeight: FontWeight.w600,
+                            Flexible(
+                              child: Text(
+                                availableStock == 0
+                                    ? (quantityInCart > 0
+                                          ? 'All in cart'
+                                          : 'Out of Stock')
+                                    : availableStock <= 5
+                                    ? 'Only $availableStock left'
+                                    : '$availableStock available',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: availableStock == 0
+                                      ? AppColors.stockLowText
+                                      : availableStock <= 5
+                                      ? AppColors.stockMediumText
+                                      : AppColors.stockHighText,
+                                  fontWeight: FontWeight.w600,
+                                ),
                               ),
                             ),
                           ],

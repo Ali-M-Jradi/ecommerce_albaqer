@@ -17,8 +17,8 @@ class ProductDetailScreen extends StatefulWidget {
 class _ProductDetailScreenState extends State<ProductDetailScreen> {
   int quantity = 1;
 
-  void _incrementQuantity() {
-    if (quantity < widget.product.quantityInStock) {
+  void _incrementQuantity(int availableStock) {
+    if (quantity < availableStock) {
       setState(() {
         quantity++;
       });
@@ -34,11 +34,17 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   }
 
   Future<void> _addToCart() async {
+    // Get the cart service from Provider
+    final cartService = Provider.of<CartService>(context, listen: false);
+    final availableStock = cartService.getAvailableStock(widget.product);
+
     // Validate stock before adding to cart
-    if (widget.product.quantityInStock <= 0) {
+    if (availableStock <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('${widget.product.name} is currently out of stock'),
+          content: Text(
+            '${widget.product.name} is currently out of stock or all items are in your cart',
+          ),
           duration: Duration(seconds: 2),
           backgroundColor: AppColors.error,
         ),
@@ -46,11 +52,11 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       return;
     }
 
-    if (quantity > widget.product.quantityInStock) {
+    if (quantity > availableStock) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Only ${widget.product.quantityInStock} items available in stock',
+            'Only $availableStock items available (${cartService.getProductQuantity(widget.product.id ?? 0)} already in cart)',
           ),
           duration: Duration(seconds: 2),
           backgroundColor: AppColors.warning,
@@ -58,9 +64,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       );
       return;
     }
-
-    // Get the cart service from Provider
-    final cartService = Provider.of<CartService>(context, listen: false);
 
     // Add product to cart with selected quantity
     final success = await cartService.addToCart(
@@ -106,6 +109,12 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final cartService = Provider.of<CartService>(context);
+    final availableStock = cartService.getAvailableStock(widget.product);
+    final quantityInCart = cartService.getProductQuantity(
+      widget.product.id ?? 0,
+    );
+
     return Scaffold(
       appBar: AppBar(title: Text('Product Details')),
       body: SingleChildScrollView(
@@ -207,30 +216,47 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   SizedBox(height: 8),
 
                   // Stock Status
-                  Row(
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Icon(
-                        widget.product.quantityInStock > 0
-                            ? Icons.check_circle
-                            : Icons.cancel,
-                        color: widget.product.quantityInStock > 0
-                            ? AppColors.success
-                            : AppColors.error,
-                        size: 20,
+                      Row(
+                        children: [
+                          Icon(
+                            availableStock > 0
+                                ? Icons.check_circle
+                                : Icons.cancel,
+                            color: availableStock > 0
+                                ? AppColors.success
+                                : AppColors.error,
+                            size: 20,
+                          ),
+                          SizedBox(width: 8),
+                          Text(
+                            availableStock > 0
+                                ? 'Available: $availableStock'
+                                : 'Out of Stock',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: availableStock > 0
+                                  ? AppColors.success
+                                  : AppColors.error,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
                       ),
-                      SizedBox(width: 8),
-                      Text(
-                        widget.product.quantityInStock > 0
-                            ? 'In Stock (${widget.product.quantityInStock} available)'
-                            : 'Out of Stock',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: widget.product.quantityInStock > 0
-                              ? AppColors.success
-                              : AppColors.error,
-                          fontWeight: FontWeight.w500,
+                      if (quantityInCart > 0)
+                        Padding(
+                          padding: const EdgeInsets.only(left: 28, top: 4),
+                          child: Text(
+                            '$quantityInCart in your cart',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: AppColors.textSecondary,
+                              fontStyle: FontStyle.italic,
+                            ),
+                          ),
                         ),
-                      ),
                     ],
                   ),
                   SizedBox(height: 24),
@@ -389,7 +415,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       ),
                       SizedBox(width: 16),
                       IconButton(
-                        onPressed: _incrementQuantity,
+                        onPressed: () => _incrementQuantity(availableStock),
                         icon: Icon(Icons.add_circle_outline),
                         iconSize: 32,
                         color: AppColors.secondary,
@@ -428,7 +454,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         ),
         child: SafeArea(
           child: ElevatedButton(
-            onPressed: widget.product.quantityInStock > 0 ? _addToCart : null,
+            onPressed: availableStock > 0 ? _addToCart : null,
             style: ElevatedButton.styleFrom(
               padding: EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(
@@ -436,8 +462,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               ),
             ),
             child: Text(
-              widget.product.quantityInStock > 0
+              availableStock > 0
                   ? 'Add to Cart'
+                  : quantityInCart > 0
+                  ? 'All Items in Cart'
                   : 'Out of Stock',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),

@@ -91,13 +91,13 @@ class CartService extends ChangeNotifier {
 
   Future<bool> addToCart({required Product product, int quantity = 1}) async {
     try {
-      // VALIDATION 1: Check if product is available
-      if (!product.isAvailable) {
-        print('⚠️ Product is not available');
+      // VALIDATION: Check stock availability
+      // Note: Availability is determined by stock count, not the isAvailable flag
+      if (product.quantityInStock <= 0) {
+        print('⚠️ Product is out of stock');
         return false;
       }
 
-      // VALIDATION 2: Check stock availability
       if (product.quantityInStock < quantity) {
         print('⚠️ Insufficient stock. Available: ${product.quantityInStock}');
         return false;
@@ -365,6 +365,14 @@ class CartService extends ChangeNotifier {
     } catch (e) {
       return null;
     }
+  }
+
+  /// Get available stock for a product (total stock - quantity in cart)
+  /// This is what's actually available to add to cart
+  int getAvailableStock(Product product) {
+    final quantityInCart = getProductQuantity(product.id ?? 0);
+    final available = product.quantityInStock - quantityInCart;
+    return available > 0 ? available : 0;
   }
 
   // ========================================

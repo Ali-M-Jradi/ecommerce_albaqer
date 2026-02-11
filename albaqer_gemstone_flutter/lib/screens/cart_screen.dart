@@ -1,11 +1,14 @@
 import 'package:albaqer_gemstone_flutter/models/cart_item.dart';
 import 'package:albaqer_gemstone_flutter/models/product.dart';
 import 'package:albaqer_gemstone_flutter/models/order_item.dart';
+import 'package:albaqer_gemstone_flutter/models/address.dart';
 import 'package:albaqer_gemstone_flutter/services/cart_service.dart';
 import 'package:albaqer_gemstone_flutter/services/order_service.dart';
+import 'package:albaqer_gemstone_flutter/services/data_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../config/app_theme.dart';
+import 'addresses_screen.dart';
 
 /// ==================================================================================
 /// CART SCREEN - Shopping Cart UI
@@ -33,6 +36,7 @@ class CartScreen extends StatefulWidget {
 
 class _CartScreenState extends State<CartScreen> {
   bool _isLoading = false;
+  Address? _selectedAddress; // Store selected shipping address
 
   @override
   Widget build(BuildContext context) {
@@ -596,7 +600,33 @@ class _CartScreenState extends State<CartScreen> {
     BuildContext context,
     CartService cartService,
   ) async {
-    // Re-validate stock availability before proceeding
+    // Step 1: Select shipping address
+    final selectedAddress = await Navigator.push<Address>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AddressesScreen(
+          isSelectMode: true,
+          onAddressSelected: (address) {
+            setState(() => _selectedAddress = address);
+          },
+        ),
+      ),
+    );
+
+    // If no address selected, cancel checkout
+    if (selectedAddress == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Please select a shipping address to continue'),
+          backgroundColor: AppColors.warning,
+        ),
+      );
+      return;
+    }
+
+    setState(() => _selectedAddress = selectedAddress);
+
+    // Step 2: Re-validate stock availability before proceeding
     for (var i = 0; i < cartService.cartItems.length; i++) {
       final cartItem = cartService.cartItems[i];
       final product = cartService.cartProducts[i];
@@ -645,12 +675,13 @@ class _CartScreenState extends State<CartScreen> {
         );
       }).toList();
 
-      // Create order with cart totals and items
+      // Create order with cart totals, items, and shipping address
       final order = await orderService.createOrder(
         subtotal: cartService.subtotal,
         taxAmount: cartService.tax,
         shippingCost: cartService.shippingCost,
         orderItems: orderItems,
+        shippingAddressId: _selectedAddress!.id!,
         notes: 'Order from mobile app - ${cartService.totalItemsCount} items',
       );
 
@@ -658,7 +689,15 @@ class _CartScreenState extends State<CartScreen> {
 
       if (!mounted) return;
 
+      // Always clear cache after checkout attempt to show latest stock
+      await DataManager().clearCache();
+      print('🔄 Product cache cleared - stock will refresh on next load');
+
       if (order != null) {
+        // Clear cart immediately after successful order
+        await cartService.clearAllItems();
+        print('🛒 Cart cleared');
+
         // Success - show confirmation
         await showDialog(
           context: context,
@@ -743,7 +782,6 @@ class _CartScreenState extends State<CartScreen> {
               TextButton(
                 onPressed: () {
                   Navigator.pop(context); // Close dialog
-                  cartService.clearAllItems(); // Clear cart
                   Navigator.pop(context); // Return to previous screen
                 },
                 child: Text('OK', style: TextStyle(fontSize: 16)),

@@ -21,7 +21,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
   final OrderService _orderService = OrderService();
   late Future<List<Order>> _ordersFuture;
   String _selectedFilter =
-      'all'; // all, pending, confirmed, assigned, delivered
+      'all'; // all, pending, confirmed, assigned, in_transit, delivered, cancelled
 
   @override
   void initState() {
@@ -151,6 +151,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
                 _buildFilterChip('pending', 'Pending'),
                 _buildFilterChip('confirmed', 'Confirmed'),
                 _buildFilterChip('assigned', 'Assigned'),
+                _buildFilterChip('in_transit', 'In Transit'),
                 _buildFilterChip('delivered', 'Delivered'),
                 _buildFilterChip('cancelled', 'Cancelled'),
               ],
