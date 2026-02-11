@@ -7,7 +7,8 @@ const {
     updateProduct,
     deleteProduct,
     searchProducts,
-    getProductCategories
+    getProductCategories,
+    getFilterOptions
 } = require('../controllers/productController');
 const { protect, admin } = require('../middleware/auth');
 const { validateProduct, validateId } = require('../middleware/validation');
@@ -16,6 +17,7 @@ const { asyncHandler } = require('../middleware/errorHandler');
 // Public routes
 router.get('/', asyncHandler(getAllProducts));
 router.get('/categories', asyncHandler(getProductCategories));
+router.get('/filters/options', asyncHandler(getFilterOptions));
 router.get('/search', asyncHandler(searchProducts));
 router.get('/:id', validateId, asyncHandler(getProductById));
 

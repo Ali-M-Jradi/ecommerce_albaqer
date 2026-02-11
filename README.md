@@ -4,7 +4,7 @@ A complete full-stack e-commerce solution for Islamic gemstone jewelry with AI-p
 
 ## 🌟 Features
 
-✨ **NEW: AI Chatbot** - Intelligent assistant powered by multi-agent RAG system
+✨ **AI Chatbot** - Intelligent assistant powered by multi-agent RAG system
 - 🤖 Product recommendations
 - 📚 Islamic gemstone education
 - 💬 Customer support
@@ -15,12 +15,17 @@ A complete full-stack e-commerce solution for Islamic gemstone jewelry with AI-p
 - **REST API** - Node.js backend with PostgreSQL database  
 - **Product Catalog** - Rings, necklaces, bracelets with Islamic significance
 - **Order Management** - Complete shopping cart and checkout flow
+- **Payment Simulation** - Cash on Delivery & Card payment demo
+- **Offline Support** - Local address caching for offline access
 - **User Accounts** - Authentication and profile management
 - **Multi-Role System** - 4 user roles with complete workflows:
   - 👤 **Customer** - Browse, order, track deliveries
   - 👨‍💼 **Admin** - Manage products, confirm orders, full control
   - 📋 **Manager** - Assign orders to delivery personnel
   - 🚚 **Delivery Man** - View assignments, contact customers, update delivery status
+- **Advanced Filters** - Search by category, price range, and product name
+- **Stock Management** - Real-time inventory tracking
+- **UI Consistency** - Unified design system across all 4 roles
 
 ---
 
@@ -275,6 +280,31 @@ GEMINI_API_KEY=your_key_here
 ---
 
 ## 🎉 What's New in This Release
+
+### ✨ Payment Simulation (NEW)
+- Cash on Delivery option with order summary
+- Card payment simulation (Visa/Mastercard UI demo)
+- Order confirmation with payment method tracking
+- Integrated into checkout flow
+
+### ✨ Offline Address Support (NEW)
+- Local address caching using SharedPreferences
+- Automatic fallback when network unavailable
+- 10-second timeout with graceful degradation
+- Seamless user experience without connectivity
+
+### ✨ UI Consistency Update (NEW)
+- Unified AppBar colors across all 4 user roles
+- Standardized SnackBar and button styling
+- Centralized color scheme through AppColors
+- Professional, consistent design system
+
+### ✨ Advanced Filters (P2-1 COMPLETED)
+- Search products by category (Rings, Necklaces, Bracelets)
+- Price range filtering (min/max)
+- Product name search
+- Real-time filter application
+- Combined multi-criteria filtering
 
 ### ✨ AI Chatbot Integration
 - Multi-agent system with 11 specialized agents

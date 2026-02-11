@@ -46,9 +46,9 @@ const getAddressById = async (req, res) => {
         const address = result.rows[0];
 
         // Check if user owns this address, is admin, or is delivery person with assigned order
-        let isAuthorized = address.user_id === req.user.id || 
-                          req.user.role === 'admin' ||
-                          req.user.role === 'manager';
+        let isAuthorized = address.user_id === req.user.id ||
+            req.user.role === 'admin' ||
+            req.user.role === 'manager';
 
         // Additional check for delivery_man: allow if they have an order assigned with this address
         if (!isAuthorized && req.user.role === 'delivery_man') {

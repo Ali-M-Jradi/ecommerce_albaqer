@@ -6,6 +6,7 @@ import 'package:albaqer_gemstone_flutter/services/order_service.dart';
 import 'package:albaqer_gemstone_flutter/services/address_service.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../config/app_theme.dart';
 
 /// Detailed view of a single order for delivery personnel
 /// Shows customer information, delivery address, and order items
@@ -43,13 +44,15 @@ class _DeliveryOrderDetailScreenState extends State<DeliveryOrderDetailScreen> {
 
   Future<void> _loadShippingAddress() async {
     if (_order.shippingAddressId == null) return;
-    
+
     setState(() {
       _isLoadingAddress = true;
     });
 
     try {
-      final address = await _addressService.getAddressById(_order.shippingAddressId!);
+      final address = await _addressService.getAddressById(
+        _order.shippingAddressId!,
+      );
       if (mounted) {
         setState(() {
           _shippingAddress = address;
@@ -68,7 +71,7 @@ class _DeliveryOrderDetailScreenState extends State<DeliveryOrderDetailScreen> {
 
   Future<void> _loadOrderItems() async {
     if (_order.id == null) return;
-    
+
     setState(() {
       _isLoadingItems = true;
       _itemsError = null;
@@ -112,7 +115,7 @@ class _DeliveryOrderDetailScreenState extends State<DeliveryOrderDetailScreen> {
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.green[700]),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
             child: const Text('Confirm'),
           ),
         ],
@@ -144,7 +147,7 @@ class _DeliveryOrderDetailScreenState extends State<DeliveryOrderDetailScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('✅ Status updated to ${_getStatusLabel(newStatus)}'),
-            backgroundColor: Colors.green,
+            backgroundColor: AppColors.success,
           ),
         );
       } else {
@@ -152,7 +155,7 @@ class _DeliveryOrderDetailScreenState extends State<DeliveryOrderDetailScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('❌ Failed to update status'),
-            backgroundColor: Colors.red,
+            backgroundColor: AppColors.error,
           ),
         );
       }
@@ -209,9 +212,9 @@ class _DeliveryOrderDetailScreenState extends State<DeliveryOrderDetailScreen> {
       await launchUrl(smsUri);
     } else {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Could not launch SMS')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Could not launch SMS')));
     }
   }
 
@@ -224,7 +227,8 @@ class _DeliveryOrderDetailScreenState extends State<DeliveryOrderDetailScreen> {
           'Order #${_order.orderNumber}',
           style: const TextStyle(fontWeight: FontWeight.bold),
         ),
-        backgroundColor: Colors.green[700],
+        backgroundColor: AppColors.primary,
+        foregroundColor: AppColors.textOnPrimary,
         elevation: 0,
       ),
       body: SingleChildScrollView(
@@ -316,10 +320,7 @@ class _DeliveryOrderDetailScreenState extends State<DeliveryOrderDetailScreen> {
                   )
                 else
                   const ListTile(
-                    leading: Icon(
-                      Icons.account_circle,
-                      color: Colors.grey,
-                    ),
+                    leading: Icon(Icons.account_circle, color: Colors.grey),
                     title: Text('Customer Information'),
                     subtitle: Text('Not available'),
                   ),
@@ -333,11 +334,12 @@ class _DeliveryOrderDetailScreenState extends State<DeliveryOrderDetailScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
                         ElevatedButton.icon(
-                          onPressed: () => _makePhoneCall(_order.customerPhone!),
+                          onPressed: () =>
+                              _makePhoneCall(_order.customerPhone!),
                           icon: const Icon(Icons.phone, size: 18),
                           label: const Text('Call'),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.green,
+                            backgroundColor: AppColors.success,
                           ),
                         ),
                         ElevatedButton.icon(
@@ -345,7 +347,7 @@ class _DeliveryOrderDetailScreenState extends State<DeliveryOrderDetailScreen> {
                           icon: const Icon(Icons.message, size: 18),
                           label: const Text('Message'),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.blue,
+                            backgroundColor: AppColors.info,
                           ),
                         ),
                       ],
@@ -383,26 +385,37 @@ class _DeliveryOrderDetailScreenState extends State<DeliveryOrderDetailScreen> {
                     ),
                   if (_shippingAddress != null)
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
                       child: ElevatedButton.icon(
                         onPressed: () async {
-                          final address = '${_shippingAddress!.streetAddress}, ${_shippingAddress!.city}, ${_shippingAddress!.country}';
+                          final address =
+                              '${_shippingAddress!.streetAddress}, ${_shippingAddress!.city}, ${_shippingAddress!.country}';
                           final encodedAddress = Uri.encodeComponent(address);
-                          final Uri mapsUri = Uri.parse('https://www.google.com/maps/search/?api=1&query=$encodedAddress');
-                          
+                          final Uri mapsUri = Uri.parse(
+                            'https://www.google.com/maps/search/?api=1&query=$encodedAddress',
+                          );
+
                           if (await canLaunchUrl(mapsUri)) {
-                            await launchUrl(mapsUri, mode: LaunchMode.externalApplication);
+                            await launchUrl(
+                              mapsUri,
+                              mode: LaunchMode.externalApplication,
+                            );
                           } else {
                             if (!mounted) return;
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Could not open maps')),
+                              const SnackBar(
+                                content: Text('Could not open maps'),
+                              ),
                             );
                           }
                         },
                         icon: const Icon(Icons.map, size: 18),
                         label: const Text('Open in Maps'),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.green[700],
+                          backgroundColor: AppColors.primary,
                         ),
                       ),
                     ),
@@ -425,7 +438,11 @@ class _DeliveryOrderDetailScreenState extends State<DeliveryOrderDetailScreen> {
                     padding: const EdgeInsets.all(16),
                     child: Column(
                       children: [
-                        const Icon(Icons.error_outline, color: Colors.red, size: 48),
+                        const Icon(
+                          Icons.error_outline,
+                          color: Colors.red,
+                          size: 48,
+                        ),
                         const SizedBox(height: 8),
                         Text(
                           _itemsError!,
@@ -450,55 +467,54 @@ class _DeliveryOrderDetailScreenState extends State<DeliveryOrderDetailScreen> {
                     ),
                   )
                 else
-                  ...List.generate(
-                    _orderItems.length,
-                    (index) {
-                      final item = _orderItems[index];
-                      return ListTile(
-                        leading: item.productImage != null
-                            ? ClipRRect(
-                                borderRadius: BorderRadius.circular(8),
-                                child: Image.network(
-                                  item.productImage!,
-                                  width: 50,
-                                  height: 50,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (context, error, stackTrace) {
-                                    return Container(
-                                      width: 50,
-                                      height: 50,
-                                      color: Colors.grey[300],
-                                      child: const Icon(Icons.image_not_supported),
-                                    );
-                                  },
-                                ),
-                              )
-                            : Container(
+                  ...List.generate(_orderItems.length, (index) {
+                    final item = _orderItems[index];
+                    return ListTile(
+                      leading: item.productImage != null
+                          ? ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: Image.network(
+                                item.productImage!,
                                 width: 50,
                                 height: 50,
-                                decoration: BoxDecoration(
-                                  color: Colors.grey[300],
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: const Icon(Icons.shopping_bag),
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Container(
+                                    width: 50,
+                                    height: 50,
+                                    color: Colors.grey[300],
+                                    child: const Icon(
+                                      Icons.image_not_supported,
+                                    ),
+                                  );
+                                },
                               ),
-                        title: Text(
-                          item.productName ?? 'Product #${item.productId}',
-                          style: const TextStyle(fontWeight: FontWeight.w600),
+                            )
+                          : Container(
+                              width: 50,
+                              height: 50,
+                              decoration: BoxDecoration(
+                                color: Colors.grey[300],
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: const Icon(Icons.shopping_bag),
+                            ),
+                      title: Text(
+                        item.productName ?? 'Product #${item.productId}',
+                        style: const TextStyle(fontWeight: FontWeight.w600),
+                      ),
+                      subtitle: Text(
+                        'Qty: ${item.quantity} × \$${item.priceAtPurchase.toStringAsFixed(2)}',
+                      ),
+                      trailing: Text(
+                        '\$${(item.quantity * item.priceAtPurchase).toStringAsFixed(2)}',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
                         ),
-                        subtitle: Text(
-                          'Qty: ${item.quantity} × \$${item.priceAtPurchase.toStringAsFixed(2)}',
-                        ),
-                        trailing: Text(
-                          '\$${(item.quantity * item.priceAtPurchase).toStringAsFixed(2)}',
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                        ),
-                      );
-                    },
-                  ),
+                      ),
+                    );
+                  }),
               ],
             ),
 
@@ -550,7 +566,7 @@ class _DeliveryOrderDetailScreenState extends State<DeliveryOrderDetailScreen> {
                         icon: const Icon(Icons.check_circle),
                         label: const Text('Mark as Delivered'),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.green,
+                          backgroundColor: AppColors.success,
                           foregroundColor: Colors.white,
                           textStyle: const TextStyle(
                             fontSize: 18,

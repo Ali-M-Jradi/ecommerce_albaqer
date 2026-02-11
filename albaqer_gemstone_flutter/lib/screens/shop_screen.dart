@@ -2,10 +2,12 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/product.dart';
+import '../models/product_filters.dart';
 import '../services/data_manager.dart';
 import '../services/wishlist_service.dart';
 import '../services/cart_service.dart';
 import 'product_detail_screen.dart';
+import '../widgets/product_filters_widget.dart';
 import '../config/app_theme.dart';
 
 /// Unified Shop Screen - Combines product browsing, search, and filters
@@ -25,13 +27,14 @@ class _ShopScreenState extends State<ShopScreen> {
   // State
   List<Product> _allProducts = [];
   List<Product> _filteredProducts = [];
-  List<String> _categories = [];
-  Set<String> _selectedCategories = {}; // Multi-select categories
   String _sortBy = 'name'; // name, price_low, price_high, newest
   bool _isLoading = true;
-  bool _showFilters = false;
   bool _hasCheckedCacheOnResume =
       false; // Track if we've checked cache on resume
+
+  // Advanced Filters
+  ProductFilters _advancedFilters = ProductFilters();
+  bool _usingAdvancedFilters = false;
 
   @override
   void initState() {
@@ -73,20 +76,22 @@ class _ShopScreenState extends State<ShopScreen> {
     try {
       final dataManager = DataManager();
 
-      // Load products and categories in parallel
-      final results = await Future.wait([
-        dataManager.getProducts(), // Will auto-refresh if cache is stale
-        dataManager.getCategoriesOfflineFirst(),
-      ]);
+      // Load products
+      final products = await dataManager
+          .getProducts(); // Will auto-refresh if cache is stale
 
       setState(() {
-        _allProducts = results[0] as List<Product>;
+        _allProducts = products;
         _filteredProducts = List.from(_allProducts);
-        _categories = results[1] as List<String>;
         _isLoading = false;
       });
 
-      _applySorting();
+      // Apply filters if any are active
+      if (_usingAdvancedFilters && _advancedFilters.hasFilters) {
+        _applyAdvancedFilters();
+      } else {
+        _applySorting();
+      }
     } catch (e) {
       print('❌ Error loading shop data: $e');
       setState(() => _isLoading = false);
@@ -107,35 +112,153 @@ class _ShopScreenState extends State<ShopScreen> {
     }
   }
 
-  void _onSearchChanged() {
-    _searchDebouncer?.cancel();
-    _searchDebouncer = Timer(const Duration(milliseconds: 300), () {
-      _applyFilters();
-    });
-  }
-
-  void _applyFilters() {
+  /// Apply advanced filters locally (same pattern as basic filters)
+  void _applyAdvancedFilters() {
     setState(() {
       _filteredProducts = _allProducts.where((product) {
-        // Multi-category filter - match ANY selected category
-        if (_selectedCategories.isNotEmpty) {
-          bool matchesCategory = _selectedCategories.any(
-            (category) => product.type.toLowerCase() == category.toLowerCase(),
-          );
-          if (!matchesCategory) return false;
+        // Price range filter
+        if (_advancedFilters.minPrice != null &&
+            product.basePrice < _advancedFilters.minPrice!) {
+          return false;
+        }
+        if (_advancedFilters.maxPrice != null &&
+            product.basePrice > _advancedFilters.maxPrice!) {
+          return false;
+        }
+
+        // Category filter (matches product type) - supports multiple
+        if (_advancedFilters.categories != null &&
+            _advancedFilters.categories!.isNotEmpty) {
+          if (!_advancedFilters.categories!.any(
+            (cat) => product.type.toLowerCase() == cat.toLowerCase(),
+          )) {
+            return false;
+          }
+        }
+
+        // Gemstone type filter - supports multiple
+        if (_advancedFilters.gemstoneTypes != null &&
+            _advancedFilters.gemstoneTypes!.isNotEmpty) {
+          if (product.stoneType == null) {
+            return false;
+          }
+          if (!_advancedFilters.gemstoneTypes!.any(
+            (gem) =>
+                product.stoneType!.toLowerCase().contains(gem.toLowerCase()),
+          )) {
+            return false;
+          }
+        }
+
+        // Color filter (stone color) - supports multiple
+        if (_advancedFilters.colors != null &&
+            _advancedFilters.colors!.isNotEmpty) {
+          if (product.stoneColor == null) {
+            return false;
+          }
+          if (!_advancedFilters.colors!.any(
+            (col) =>
+                product.stoneColor!.toLowerCase().contains(col.toLowerCase()),
+          )) {
+            return false;
+          }
+        }
+
+        // Metal type filter - supports multiple
+        if (_advancedFilters.metalTypes != null &&
+            _advancedFilters.metalTypes!.isNotEmpty) {
+          if (product.metalType == null) {
+            return false;
+          }
+          if (!_advancedFilters.metalTypes!.any(
+            (metal) =>
+                product.metalType!.toLowerCase().contains(metal.toLowerCase()),
+          )) {
+            return false;
+          }
+        }
+
+        // In stock filter
+        if (_advancedFilters.inStock == true) {
+          if (product.quantityInStock <= 0) {
+            return false;
+          }
+        }
+
+        // Rating filter
+        if (_advancedFilters.minRating != null) {
+          if (product.rating < _advancedFilters.minRating!) {
+            return false;
+          }
         }
 
         // Search filter
-        final query = _searchController.text.toLowerCase();
-        if (query.isNotEmpty) {
-          return product.name.toLowerCase().contains(query) ||
-              (product.description?.toLowerCase().contains(query) ?? false);
+        if (_advancedFilters.search != null &&
+            _advancedFilters.search!.isNotEmpty) {
+          final query = _advancedFilters.search!.toLowerCase();
+          if (!product.name.toLowerCase().contains(query) &&
+              !(product.description?.toLowerCase().contains(query) ?? false)) {
+            return false;
+          }
         }
 
         return true;
       }).toList();
     });
 
+    _applySorting();
+  }
+
+  /// Show advanced filters bottom sheet
+  void _showAdvancedFilters() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => ProductFiltersWidget(
+        currentFilters: _advancedFilters,
+        onApply: (ProductFilters newFilters) {
+          setState(() {
+            _advancedFilters = newFilters;
+            _usingAdvancedFilters = true;
+            _searchController.clear();
+          });
+          _applyAdvancedFilters(); // Apply filters locally
+        },
+      ),
+    );
+  }
+
+  /// Clear all filters (basic and advanced)
+  void _clearAllFilters() {
+    setState(() {
+      _advancedFilters = ProductFilters();
+      _usingAdvancedFilters = false;
+      _searchController.clear();
+      _sortBy = 'name';
+    });
+    _loadData();
+  }
+
+  void _onSearchChanged() {
+    _searchDebouncer?.cancel();
+    _searchDebouncer = Timer(const Duration(milliseconds: 300), () {
+      _applySearch();
+    });
+  }
+
+  void _applySearch() {
+    setState(() {
+      final query = _searchController.text.toLowerCase();
+      if (query.isEmpty) {
+        _filteredProducts = List.from(_allProducts);
+      } else {
+        _filteredProducts = _allProducts.where((product) {
+          return product.name.toLowerCase().contains(query) ||
+              (product.description?.toLowerCase().contains(query) ?? false);
+        }).toList();
+      }
+    });
     _applySorting();
   }
 
@@ -158,16 +281,6 @@ class _ShopScreenState extends State<ShopScreen> {
     });
   }
 
-  void _clearFilters() {
-    setState(() {
-      _selectedCategories.clear();
-      _searchController.clear();
-      _sortBy = 'name';
-      _filteredProducts = List.from(_allProducts);
-    });
-    _applySorting();
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -176,8 +289,8 @@ class _ShopScreenState extends State<ShopScreen> {
           // Search Bar
           _buildSearchBar(),
 
-          // Filter Chips
-          if (_categories.isNotEmpty) _buildFilterSection(),
+          // Active Filters Display
+          if (_advancedFilters.hasFilters) _buildActiveFiltersChips(),
 
           // Products Grid
           Expanded(
@@ -212,7 +325,7 @@ class _ShopScreenState extends State<ShopScreen> {
                       icon: const Icon(Icons.clear),
                       onPressed: () {
                         _searchController.clear();
-                        _applyFilters();
+                        _applySearch();
                       },
                     )
                   : null,
@@ -278,24 +391,31 @@ class _ShopScreenState extends State<ShopScreen> {
 
               const SizedBox(width: 8),
 
-              // Filter Toggle Button
-              Container(
-                decoration: BoxDecoration(
-                  color: _showFilters ? AppColors.primary : AppColors.surface,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: IconButton(
-                  icon: Icon(
-                    Icons.filter_list,
-                    color: _showFilters
-                        ? AppColors.textOnPrimary
-                        : AppColors.primary,
+              // Advanced Filter Button
+              Badge(
+                label: Text('${_advancedFilters.activeFilterCount}'),
+                isLabelVisible: _advancedFilters.hasFilters,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: _advancedFilters.hasFilters
+                        ? AppColors.primary
+                        : AppColors.surface,
+                    borderRadius: BorderRadius.circular(8),
                   ),
-                  onPressed: () {
-                    setState(() => _showFilters = !_showFilters);
-                  },
+                  child: IconButton(
+                    icon: Icon(
+                      Icons.tune,
+                      color: _advancedFilters.hasFilters
+                          ? AppColors.textOnPrimary
+                          : AppColors.primary,
+                    ),
+                    tooltip: 'Advanced Filters',
+                    onPressed: _showAdvancedFilters,
+                  ),
                 ),
               ),
+
+              const SizedBox(width: 8),
 
               // Results count
               Padding(
@@ -315,100 +435,208 @@ class _ShopScreenState extends State<ShopScreen> {
     );
   }
 
-  Widget _buildFilterSection() {
-    if (!_showFilters) return const SizedBox.shrink();
+  /// Build active filter chips display
+  Widget _buildActiveFiltersChips() {
+    List<Widget> chips = [];
+
+    // Price range chip
+    if (_advancedFilters.minPrice != null ||
+        _advancedFilters.maxPrice != null) {
+      chips.add(
+        Chip(
+          label: Text(
+            'Price: \$${_advancedFilters.minPrice ?? 0} - \$${_advancedFilters.maxPrice ?? 5000}',
+            style: const TextStyle(fontSize: 12),
+          ),
+          deleteIcon: const Icon(Icons.close, size: 16),
+          onDeleted: () {
+            setState(() {
+              _advancedFilters = _advancedFilters.copyWith(
+                minPrice: null,
+                maxPrice: null,
+              );
+            });
+            _applyAdvancedFilters();
+          },
+        ),
+      );
+    }
+
+    // Category chips (multiple)
+    if (_advancedFilters.categories != null &&
+        _advancedFilters.categories!.isNotEmpty) {
+      for (var category in _advancedFilters.categories!) {
+        chips.add(
+          Chip(
+            label: Text(category, style: const TextStyle(fontSize: 12)),
+            deleteIcon: const Icon(Icons.close, size: 16),
+            onDeleted: () {
+              setState(() {
+                List<String> newCategories = List.from(
+                  _advancedFilters.categories!,
+                );
+                newCategories.remove(category);
+                _advancedFilters = _advancedFilters.copyWith(
+                  categories: newCategories.isEmpty ? null : newCategories,
+                );
+              });
+              _applyAdvancedFilters();
+            },
+          ),
+        );
+      }
+    }
+
+    // Gemstone chips (multiple)
+    if (_advancedFilters.gemstoneTypes != null &&
+        _advancedFilters.gemstoneTypes!.isNotEmpty) {
+      for (var gemstone in _advancedFilters.gemstoneTypes!) {
+        chips.add(
+          Chip(
+            label: Text(gemstone, style: const TextStyle(fontSize: 12)),
+            deleteIcon: const Icon(Icons.close, size: 16),
+            onDeleted: () {
+              setState(() {
+                List<String> newGemstones = List.from(
+                  _advancedFilters.gemstoneTypes!,
+                );
+                newGemstones.remove(gemstone);
+                _advancedFilters = _advancedFilters.copyWith(
+                  gemstoneTypes: newGemstones.isEmpty ? null : newGemstones,
+                );
+              });
+              _applyAdvancedFilters();
+            },
+          ),
+        );
+      }
+    }
+
+    // Color chips (multiple)
+    if (_advancedFilters.colors != null &&
+        _advancedFilters.colors!.isNotEmpty) {
+      for (var color in _advancedFilters.colors!) {
+        chips.add(
+          Chip(
+            label: Text(color, style: const TextStyle(fontSize: 12)),
+            deleteIcon: const Icon(Icons.close, size: 16),
+            onDeleted: () {
+              setState(() {
+                List<String> newColors = List.from(_advancedFilters.colors!);
+                newColors.remove(color);
+                _advancedFilters = _advancedFilters.copyWith(
+                  colors: newColors.isEmpty ? null : newColors,
+                );
+              });
+              _applyAdvancedFilters();
+            },
+          ),
+        );
+      }
+    }
+
+    // Metal chips (multiple)
+    if (_advancedFilters.metalTypes != null &&
+        _advancedFilters.metalTypes!.isNotEmpty) {
+      for (var metal in _advancedFilters.metalTypes!) {
+        chips.add(
+          Chip(
+            label: Text(metal, style: const TextStyle(fontSize: 12)),
+            deleteIcon: const Icon(Icons.close, size: 16),
+            onDeleted: () {
+              setState(() {
+                List<String> newMetals = List.from(
+                  _advancedFilters.metalTypes!,
+                );
+                newMetals.remove(metal);
+                _advancedFilters = _advancedFilters.copyWith(
+                  metalTypes: newMetals.isEmpty ? null : newMetals,
+                );
+              });
+              _applyAdvancedFilters();
+            },
+          ),
+        );
+      }
+    }
+
+    // In stock chip
+    if (_advancedFilters.inStock == true) {
+      chips.add(
+        Chip(
+          label: const Text('In Stock', style: TextStyle(fontSize: 12)),
+          deleteIcon: const Icon(Icons.close, size: 16),
+          onDeleted: () {
+            setState(() {
+              _advancedFilters = _advancedFilters.copyWith(inStock: false);
+            });
+            _applyAdvancedFilters();
+          },
+        ),
+      );
+    }
+
+    // Rating chip
+    if (_advancedFilters.minRating != null) {
+      chips.add(
+        Chip(
+          label: Text(
+            '${_advancedFilters.minRating}+ Stars',
+            style: const TextStyle(fontSize: 12),
+          ),
+          deleteIcon: const Icon(Icons.close, size: 16),
+          onDeleted: () {
+            setState(() {
+              _advancedFilters = _advancedFilters.copyWith(minRating: null);
+            });
+            _applyAdvancedFilters();
+          },
+        ),
+      );
+    }
+
+    // Size chip
+    if (_advancedFilters.size != null) {
+      chips.add(
+        Chip(
+          label: Text(
+            'Size ${_advancedFilters.size}',
+            style: const TextStyle(fontSize: 12),
+          ),
+          deleteIcon: const Icon(Icons.close, size: 16),
+          onDeleted: () {
+            setState(() {
+              _advancedFilters = _advancedFilters.copyWith(size: null);
+            });
+            _applyAdvancedFilters();
+          },
+        ),
+      );
+    }
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      color: AppColors.surface,
+      color: AppColors.surface.withOpacity(0.5),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  const Text(
-                    'Categories',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                  ),
-                  if (_selectedCategories.isNotEmpty)
-                    Padding(
-                      padding: const EdgeInsets.only(left: 8),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 2,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.primary,
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Text(
-                          '${_selectedCategories.length}',
-                          style: const TextStyle(
-                            color: AppColors.textOnPrimary,
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ),
-                ],
+              const Icon(Icons.filter_alt, size: 16, color: AppColors.primary),
+              const SizedBox(width: 8),
+              const Text(
+                'Active Filters',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
               ),
-              if (_selectedCategories.isNotEmpty ||
-                  _searchController.text.isNotEmpty)
-                TextButton.icon(
-                  icon: const Icon(Icons.clear_all, size: 16),
-                  label: const Text('Clear'),
-                  onPressed: _clearFilters,
-                  style: TextButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
-                  ),
-                ),
+              const Spacer(),
+              TextButton(
+                onPressed: _clearAllFilters,
+                child: const Text('Clear All', style: TextStyle(fontSize: 12)),
+              ),
             ],
           ),
-
           const SizedBox(height: 8),
-
-          // Category Chips (Multi-select)
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: _categories.map((category) {
-              final isSelected = _selectedCategories.contains(category);
-              return FilterChip(
-                label: Text(
-                  category.toUpperCase(),
-                  style: TextStyle(
-                    color: isSelected
-                        ? AppColors.textOnPrimary
-                        : AppColors.primary,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                selected: isSelected,
-                onSelected: (selected) {
-                  setState(() {
-                    if (selected) {
-                      _selectedCategories.add(category);
-                    } else {
-                      _selectedCategories.remove(category);
-                    }
-                  });
-                  _applyFilters();
-                },
-                selectedColor: AppColors.primary,
-                backgroundColor: AppColors.background,
-                checkmarkColor: AppColors.textOnPrimary,
-                side: BorderSide(
-                  color: isSelected ? AppColors.primary : AppColors.border,
-                ),
-              );
-            }).toList(),
-          ),
+          Wrap(spacing: 8, runSpacing: 8, children: chips),
         ],
       ),
     );
@@ -740,12 +968,11 @@ class _ShopScreenState extends State<ShopScreen> {
               style: const TextStyle(fontSize: 14, color: AppColors.textLight),
               textAlign: TextAlign.center,
             ),
-            if (_selectedCategories.isNotEmpty ||
-                _searchController.text.isNotEmpty)
+            if (_searchController.text.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.only(top: 16),
                 child: ElevatedButton.icon(
-                  onPressed: _clearFilters,
+                  onPressed: _clearAllFilters,
                   icon: const Icon(Icons.clear_all),
                   label: const Text('Clear Filters'),
                   style: ElevatedButton.styleFrom(

@@ -394,7 +394,7 @@ const updateOrderStatus = async (req, res) => {
         if (status !== 'cancelled') {
             const currentLevel = statusHierarchy[previousStatus] || 0;
             const newLevel = statusHierarchy[status] || 0;
-            
+
             // Prevent backwards status changes (e.g., delivered → in_transit)
             if (newLevel < currentLevel) {
                 await client.query('ROLLBACK');

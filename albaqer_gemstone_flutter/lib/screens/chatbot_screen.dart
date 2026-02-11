@@ -134,6 +134,8 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('💎 AlBaqer Assistant'),
+        backgroundColor: AppColors.primary,
+        foregroundColor: AppColors.textOnPrimary,
         actions: [
           IconButton(
             icon: Icon(

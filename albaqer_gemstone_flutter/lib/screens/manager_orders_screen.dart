@@ -21,7 +21,7 @@ class _ManagerOrdersScreenState extends State<ManagerOrdersScreen> {
   final OrderService _orderService = OrderService();
   late Future<List<Order>> _ordersFuture;
   // Filter: 'pending' = Ready to Assign (confirmed by admin, unassigned)
-  //         'assigned' = Orders assigned to delivery personnel  
+  //         'assigned' = Orders assigned to delivery personnel
   //         'all' = All orders manager can see
   String _selectedFilter = 'pending';
 
@@ -186,7 +186,7 @@ class _ManagerOrdersScreenState extends State<ManagerOrdersScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Order assigned successfully'),
-            backgroundColor: Colors.green,
+            backgroundColor: AppColors.success,
           ),
         );
         _loadOrders(); // Refresh the list
@@ -194,14 +194,14 @@ class _ManagerOrdersScreenState extends State<ManagerOrdersScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Failed to assign order'),
-            backgroundColor: Colors.red,
+            backgroundColor: AppColors.error,
           ),
         );
       }
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
+        SnackBar(content: Text('Error: $e'), backgroundColor: AppColors.error),
       );
     }
   }
@@ -237,7 +237,7 @@ class _ManagerOrdersScreenState extends State<ManagerOrdersScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Delivery person unassigned'),
-            backgroundColor: Colors.green,
+            backgroundColor: AppColors.success,
           ),
         );
         _loadOrders();
@@ -245,7 +245,7 @@ class _ManagerOrdersScreenState extends State<ManagerOrdersScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Failed to unassign delivery person'),
-            backgroundColor: Colors.red,
+            backgroundColor: AppColors.error,
           ),
         );
       }
@@ -263,8 +263,8 @@ class _ManagerOrdersScreenState extends State<ManagerOrdersScreen> {
             Text('Order Assignment'),
           ],
         ),
-        backgroundColor: Colors.deepPurple,
-        foregroundColor: Colors.white,
+        backgroundColor: AppColors.primary,
+        foregroundColor: AppColors.textOnPrimary,
         actions: [
           IconButton(
             icon: Icon(Icons.refresh),

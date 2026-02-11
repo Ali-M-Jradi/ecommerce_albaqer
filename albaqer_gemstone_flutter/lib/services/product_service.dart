@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:albaqer_gemstone_flutter/models/product.dart';
+import 'package:albaqer_gemstone_flutter/models/product_filters.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../config/api_config.dart';
 
@@ -143,6 +144,69 @@ class ProductService {
       }
     } catch (e) {
       print('Error fetching products: $e');
+      return [];
+    }
+  }
+
+  // ========== READ WITH FILTERS ==========
+  /// Fetch products with advanced filters
+  /// Returns a list of filtered products
+  Future<List<Product>> fetchProductsWithFilters(ProductFilters filters) async {
+    try {
+      final baseUrl = ApiConfig.baseUrl;
+      final queryParams = filters.toQueryParams();
+
+      // Build URL with query parameters
+      final uri = Uri.parse(
+        '$baseUrl/products',
+      ).replace(queryParameters: queryParams);
+
+      print('📡 Fetching filtered products from: $uri');
+
+      final response = await http.get(uri).timeout(const Duration(seconds: 10));
+
+      print('📥 Response status: ${response.statusCode}');
+
+      if (response.statusCode == 200) {
+        final jsonResponse = jsonDecode(response.body);
+        List<dynamic> data = jsonResponse['data'];
+        print('📊 Found ${data.length} products with filters');
+
+        return data.map((json) {
+          return Product(
+            id: json['id'],
+            name: json['name'],
+            type: json['type'],
+            description: json['description'],
+            basePrice: _toDouble(json['base_price']),
+            rating: _toDouble(json['rating']),
+            totalReviews: json['total_reviews'] ?? 0,
+            quantityInStock: json['quantity_in_stock'],
+            imageUrl: json['image_url'],
+            isAvailable: json['is_available'] ?? true,
+            createdAt: json['created_at'] != null
+                ? DateTime.parse(json['created_at'])
+                : null,
+            updatedAt: json['updated_at'] != null
+                ? DateTime.parse(json['updated_at'])
+                : null,
+            metalType: json['metal_type'],
+            metalColor: json['metal_color'],
+            metalPurity: json['metal_purity'],
+            metalWeightGrams: _toDouble(json['metal_weight_grams']),
+            stoneType: json['stone_type'],
+            stoneColor: json['stone_color'],
+            stoneCarat: _toDouble(json['stone_carat']),
+            stoneCut: json['stone_cut'],
+            stoneClarity: json['stone_clarity'],
+          );
+        }).toList();
+      } else {
+        print('Failed to fetch filtered products: ${response.statusCode}');
+        return [];
+      }
+    } catch (e) {
+      print('Error fetching filtered products: $e');
       return [];
     }
   }

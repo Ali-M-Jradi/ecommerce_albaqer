@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../config/app_theme.dart';
 import 'addresses_screen.dart';
+import 'payment_screen.dart';
 
 /// ==================================================================================
 /// CART SCREEN - Shopping Cart UI
@@ -658,6 +659,28 @@ class _CartScreenState extends State<CartScreen> {
       }
     }
 
+    // Step 3: Navigate to payment screen
+    final paymentInfo = await Navigator.push<Map<String, dynamic>>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PaymentScreen(
+          cartItems: cartService.cartItems,
+          cartProducts: cartService.cartProducts,
+          subtotal: cartService.subtotal,
+          tax: cartService.tax,
+          shippingCost: cartService.shippingCost,
+          total: cartService.total,
+          shippingAddress: _selectedAddress!,
+        ),
+      ),
+    );
+
+    // If payment was cancelled, return
+    if (paymentInfo == null) {
+      return;
+    }
+
+    // Step 4: Create order after payment
     setState(() => _isLoading = true);
 
     try {
@@ -682,7 +705,8 @@ class _CartScreenState extends State<CartScreen> {
         shippingCost: cartService.shippingCost,
         orderItems: orderItems,
         shippingAddressId: _selectedAddress!.id!,
-        notes: 'Order from mobile app - ${cartService.totalItemsCount} items',
+        notes:
+            'Payment Method: ${paymentInfo['paymentMethodDisplay']} - Order from mobile app - ${cartService.totalItemsCount} items',
       );
 
       setState(() => _isLoading = false);
@@ -761,6 +785,20 @@ class _CartScreenState extends State<CartScreen> {
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 16,
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 4),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text('Payment:', style: TextStyle(fontSize: 14)),
+                          Text(
+                            '${paymentInfo['paymentMethodDisplay']}',
+                            style: TextStyle(
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.primary,
                             ),
                           ),
                         ],

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:albaqer_gemstone_flutter/services/order_service.dart';
 import 'package:albaqer_gemstone_flutter/models/order.dart';
 import 'package:intl/intl.dart';
+import '../config/app_theme.dart';
 import 'delivery_order_detail_screen.dart';
 
 /// Screen for delivery personnel to view and manage their assigned deliveries
@@ -81,7 +82,7 @@ class _DeliveryOrdersScreenState extends State<DeliveryOrdersScreen> {
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.green[700]),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
             child: const Text('Confirm'),
           ),
         ],
@@ -109,7 +110,7 @@ class _DeliveryOrdersScreenState extends State<DeliveryOrdersScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('✅ Order updated to ${_getStatusLabel(newStatus)}'),
-            backgroundColor: Colors.green,
+            backgroundColor: AppColors.success,
           ),
         );
         _loadOrders(); // Reload to get updated data
@@ -117,7 +118,7 @@ class _DeliveryOrdersScreenState extends State<DeliveryOrdersScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('❌ Failed to update order status'),
-            backgroundColor: Colors.red,
+            backgroundColor: AppColors.error,
           ),
         );
       }
@@ -177,7 +178,8 @@ class _DeliveryOrdersScreenState extends State<DeliveryOrdersScreen> {
           'My Deliveries',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
-        backgroundColor: Colors.green[700],
+        backgroundColor: AppColors.primary,
+        foregroundColor: AppColors.textOnPrimary,
         elevation: 0,
         actions: [
           IconButton(icon: const Icon(Icons.refresh), onPressed: _loadOrders),
@@ -477,7 +479,7 @@ class _DeliveryOrdersScreenState extends State<DeliveryOrdersScreen> {
                         icon: const Icon(Icons.check_circle, size: 18),
                         label: const Text('Mark Delivered'),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.green,
+                          backgroundColor: AppColors.success,
                           foregroundColor: Colors.white,
                         ),
                       ),

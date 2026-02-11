@@ -116,7 +116,11 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     );
 
     return Scaffold(
-      appBar: AppBar(title: Text('Product Details')),
+      appBar: AppBar(
+        title: Text('Product Details'),
+        backgroundColor: AppColors.primary,
+        foregroundColor: AppColors.textOnPrimary,
+      ),
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

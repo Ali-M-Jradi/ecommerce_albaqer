@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:albaqer_gemstone_flutter/services/order_service.dart';
-import 'package:albaqer_gemstone_flutter/models/order.dart';
+import '../config/app_theme.dart';
 import 'delivery_orders_screen.dart';
 
 /// Dashboard for delivery personnel to view their assignment statistics
@@ -59,7 +59,8 @@ class _DeliveryDashboardScreenState extends State<DeliveryDashboardScreen> {
           'Delivery Dashboard',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
-        backgroundColor: Colors.green[700],
+        backgroundColor: AppColors.primary,
+        foregroundColor: AppColors.textOnPrimary,
         elevation: 0,
         actions: [
           IconButton(icon: const Icon(Icons.refresh), onPressed: _loadStats),

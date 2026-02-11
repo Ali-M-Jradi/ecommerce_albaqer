@@ -37,7 +37,8 @@ class OrderItem {
       orderId: json['order_id'],
       productId: json['product_id'],
       quantity: json['quantity'],
-      priceAtPurchase: double.tryParse(json['price_at_purchase'].toString()) ?? 0.0,
+      priceAtPurchase:
+          double.tryParse(json['price_at_purchase'].toString()) ?? 0.0,
       productName: json['product_name'],
       productDescription: json['product_description'],
       productImage: json['product_image'],
