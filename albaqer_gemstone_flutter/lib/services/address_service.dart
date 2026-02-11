@@ -227,4 +227,38 @@ class AddressService {
       return {'success': false, 'message': 'Error: $e'};
     }
   }
+
+  // ========== READ (BY ID) ==========
+  /// Fetch a specific address by ID
+  /// Used by delivery persons to view shipping address for assigned orders
+  Future<Address?> getAddressById(int addressId) async {
+    try {
+      final headers = await _getHeaders();
+      final response = await http.get(
+        Uri.parse('${ApiConfig.baseUrl}/addresses/$addressId'),
+        headers: headers,
+      );
+
+      if (response.statusCode == 200) {
+        final json = jsonDecode(response.body);
+        final data = json['data'];
+        return Address(
+          id: data['id'],
+          userId: data['user_id'],
+          addressType: data['address_type'],
+          streetAddress: data['street_address'],
+          city: data['city'],
+          country: data['country'],
+          isDefault: data['is_default'] == true || data['is_default'] == 1,
+        );
+      } else {
+        print('Failed to fetch address: ${response.statusCode}');
+        print('Response: ${response.body}');
+        return null;
+      }
+    } catch (e) {
+      print('Error fetching address: $e');
+      return null;
+    }
+  }
 }

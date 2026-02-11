@@ -86,6 +86,18 @@ const managerOrAdmin = (req, res, next) => {
     }
 };
 
+// Admin or Delivery Man access (for order status updates)
+const adminOrDelivery = (req, res, next) => {
+    if (req.user && (req.user.role === 'admin' || req.user.role === 'delivery_man')) {
+        next();
+    } else {
+        res.status(403).json({
+            success: false,
+            message: 'Not authorized. Admin or Delivery Man access required'
+        });
+    }
+};
+
 // Generate JWT token
 const generateToken = (id, email, role = 'customer') => {
     return jwt.sign(
@@ -101,5 +113,6 @@ module.exports = {
     manager,
     deliveryMan,
     managerOrAdmin,
+    adminOrDelivery,
     generateToken
 };

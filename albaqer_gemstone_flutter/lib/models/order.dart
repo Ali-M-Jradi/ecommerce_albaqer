@@ -15,6 +15,10 @@ class Order {
   final DateTime? assignedAt;
   final DateTime? createdAt;
   final DateTime? updatedAt;
+  // Customer information (from delivery API)
+  final String? customerName;
+  final String? customerPhone;
+  final String? customerEmail;
 
   Order({
     this.id,
@@ -33,6 +37,9 @@ class Order {
     this.assignedAt,
     this.createdAt,
     this.updatedAt,
+    this.customerName,
+    this.customerPhone,
+    this.customerEmail,
   });
 
   factory Order.fromJson(Map<String, dynamic> json) {
@@ -65,6 +72,9 @@ class Order {
       updatedAt: json['updated_at'] != null
           ? DateTime.parse(json['updated_at'])
           : null,
+      customerName: json['customer_name'],
+      customerPhone: json['customer_phone'],
+      customerEmail: json['customer_email'],
     );
   }
 
@@ -87,5 +97,49 @@ class Order {
       'created_at': createdAt?.toIso8601String(),
       'updated_at': updatedAt?.toIso8601String(),
     };
+  }
+
+  Order copyWith({
+    int? id,
+    int? userId,
+    String? orderNumber,
+    double? totalAmount,
+    double? taxAmount,
+    double? shippingCost,
+    double? discountAmount,
+    String? status,
+    int? shippingAddressId,
+    int? billingAddressId,
+    String? trackingNumber,
+    String? notes,
+    int? deliveryManId,
+    DateTime? assignedAt,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    String? customerName,
+    String? customerPhone,
+    String? customerEmail,
+  }) {
+    return Order(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      orderNumber: orderNumber ?? this.orderNumber,
+      totalAmount: totalAmount ?? this.totalAmount,
+      taxAmount: taxAmount ?? this.taxAmount,
+      shippingCost: shippingCost ?? this.shippingCost,
+      discountAmount: discountAmount ?? this.discountAmount,
+      status: status ?? this.status,
+      shippingAddressId: shippingAddressId ?? this.shippingAddressId,
+      billingAddressId: billingAddressId ?? this.billingAddressId,
+      trackingNumber: trackingNumber ?? this.trackingNumber,
+      notes: notes ?? this.notes,
+      deliveryManId: deliveryManId ?? this.deliveryManId,
+      assignedAt: assignedAt ?? this.assignedAt,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      customerName: customerName ?? this.customerName,
+      customerPhone: customerPhone ?? this.customerPhone,
+      customerEmail: customerEmail ?? this.customerEmail,
+    );
   }
 }

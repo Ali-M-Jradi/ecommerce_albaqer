@@ -7,6 +7,8 @@ import 'package:albaqer_gemstone_flutter/screens/dashboard_screen.dart';
 import 'package:albaqer_gemstone_flutter/screens/manager_dashboard_screen.dart';
 import 'package:albaqer_gemstone_flutter/screens/manager_orders_screen.dart';
 import 'package:albaqer_gemstone_flutter/screens/delivery_people_screen.dart';
+import 'package:albaqer_gemstone_flutter/screens/delivery_dashboard_screen.dart';
+import 'package:albaqer_gemstone_flutter/screens/delivery_orders_screen.dart';
 import 'package:albaqer_gemstone_flutter/services/auth_service.dart';
 import 'package:flutter/material.dart';
 import '../config/app_theme.dart';
@@ -236,6 +238,59 @@ class _DrawerWidgetState extends State<DrawerWidget> {
                         context,
                         MaterialPageRoute(
                           builder: (context) => const DeliveryPeopleScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                ],
+
+                // ========================================
+                // DELIVERY-ONLY MENU ITEMS
+                // ========================================
+                if (userRole == 'delivery_man') ...[
+                  Divider(),
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    child: Text(
+                      'Delivery Tools',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ),
+
+                  // Delivery Dashboard
+                  ListTile(
+                    leading: Icon(
+                      Icons.local_shipping,
+                      color: Colors.green[700],
+                    ),
+                    title: Text('Delivery Dashboard'),
+                    subtitle: Text('Overview and quick actions'),
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const DeliveryDashboardScreen(),
+                        ),
+                      );
+                    },
+                  ),
+
+                  // My Deliveries
+                  ListTile(
+                    leading: Icon(Icons.assignment, color: Colors.orange),
+                    title: Text('My Deliveries'),
+                    subtitle: Text('View assigned orders'),
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const DeliveryOrdersScreen(),
                         ),
                       );
                     },

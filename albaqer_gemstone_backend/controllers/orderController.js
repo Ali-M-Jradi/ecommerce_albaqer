@@ -31,6 +31,45 @@ const getMyOrders = async (req, res) => {
     });
 };
 
+// @desc    Get orders assigned to delivery person
+// @route   GET /api/orders/delivery/my-deliveries
+// @access  Private (Delivery Man only)
+const getMyDeliveries = async (req, res) => {
+    try {
+        const result = await pool.query(
+            `SELECT o.*, 
+                    u.full_name as customer_name, 
+                    u.phone as customer_phone,
+                    u.email as customer_email
+             FROM orders o
+             LEFT JOIN users u ON o.user_id = u.id
+             WHERE o.delivery_man_id = $1 
+             ORDER BY 
+                CASE o.status
+                    WHEN 'assigned' THEN 1
+                    WHEN 'in_transit' THEN 2
+                    WHEN 'delivered' THEN 3
+                    ELSE 4
+                END,
+                o.created_at DESC`,
+            [req.user.id]
+        );
+
+        res.json({
+            success: true,
+            data: result.rows,
+            count: result.rowCount
+        });
+    } catch (error) {
+        console.error('❌ Error fetching delivery orders:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to fetch delivery orders',
+            error: error.message
+        });
+    }
+};
+
 // @desc    Get single order by ID
 // @route   GET /api/orders/:id
 // @access  Private
@@ -47,8 +86,13 @@ const getOrderById = async (req, res) => {
 
     const order = result.rows[0];
 
-    // Check if user owns this order or is admin
-    if (order.user_id !== req.user.id && req.user.role !== 'admin') {
+    // Check if user owns this order, is admin, is manager, or is the assigned delivery person
+    const isAuthorized = order.user_id === req.user.id ||
+        req.user.role === 'admin' ||
+        req.user.role === 'manager' ||
+        (req.user.role === 'delivery_man' && order.delivery_man_id === req.user.id);
+
+    if (!isAuthorized) {
         return res.status(403).json({
             success: false,
             message: 'Not authorized to view this order'
@@ -59,6 +103,73 @@ const getOrderById = async (req, res) => {
         success: true,
         data: order
     });
+};
+
+// @desc    Get order items for a specific order
+// @route   GET /api/orders/:id/items
+// @access  Private (Order owner, Admin, Manager, or assigned Delivery Man)
+const getOrderItems = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        // First check if order exists and user has access
+        const orderCheck = await pool.query(
+            'SELECT user_id, delivery_man_id FROM orders WHERE id = $1',
+            [id]
+        );
+
+        if (orderCheck.rowCount === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Order not found'
+            });
+        }
+
+        const order = orderCheck.rows[0];
+
+        // Check authorization
+        const isAuthorized = order.user_id === req.user.id ||
+            req.user.role === 'admin' ||
+            req.user.role === 'manager' ||
+            (req.user.role === 'delivery_man' && order.delivery_man_id === req.user.id);
+
+        if (!isAuthorized) {
+            return res.status(403).json({
+                success: false,
+                message: 'Not authorized to view these order items'
+            });
+        }
+
+        // Get order items with product details
+        const result = await pool.query(
+            `SELECT oi.*, 
+                    p.name as product_name,
+                    p.description as product_description,
+                    CASE 
+                        WHEN p.image_url IS NOT NULL AND p.image_url != '' 
+                        THEN CONCAT('http://192.168.0.106:3000', p.image_url)
+                        ELSE NULL
+                    END as product_image
+             FROM order_items oi
+             LEFT JOIN products p ON oi.product_id = p.id
+             WHERE oi.order_id = $1
+             ORDER BY oi.id`,
+            [id]
+        );
+
+        res.json({
+            success: true,
+            data: result.rows,
+            count: result.rowCount
+        });
+    } catch (error) {
+        console.error('❌ Error fetching order items:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to fetch order items',
+            error: error.message
+        });
+    }
 };
 
 // @desc    Create new order with order items
@@ -268,6 +379,34 @@ const updateOrderStatus = async (req, res) => {
 
         const currentOrder = orderCheck.rows[0];
         const previousStatus = currentOrder.status;
+
+        // STATUS WORKFLOW VALIDATION: Prevent invalid status transitions
+        const statusHierarchy = {
+            'pending': 1,
+            'confirmed': 2,
+            'assigned': 3,
+            'in_transit': 4,
+            'delivered': 5,
+            'cancelled': 99 // Can transition to cancelled from any status
+        };
+
+        // Allow cancelled from any status, or forward progression only
+        if (status !== 'cancelled') {
+            const currentLevel = statusHierarchy[previousStatus] || 0;
+            const newLevel = statusHierarchy[status] || 0;
+            
+            // Prevent backwards status changes (e.g., delivered → in_transit)
+            if (newLevel < currentLevel) {
+                await client.query('ROLLBACK');
+                console.error(`❌ Invalid status transition: ${previousStatus} → ${status}`);
+                return res.status(400).json({
+                    success: false,
+                    message: `Invalid status transition. Cannot change from '${previousStatus}' to '${status}'. Status can only move forward in the workflow.`,
+                    currentStatus: previousStatus,
+                    attemptedStatus: status
+                });
+            }
+        }
 
         // STOCK RESTORATION: If changing to 'cancelled' from a non-cancelled status
         if (status === 'cancelled' && previousStatus !== 'cancelled') {
@@ -693,6 +832,7 @@ module.exports = {
     getAllOrders,
     getMyOrders,
     getOrderById,
+    getOrderItems,
     createOrder,
     updateOrderStatus,
     deleteOrder,
@@ -702,6 +842,8 @@ module.exports = {
     assignOrderToDelivery,
     getDeliveryManOrders,
     unassignOrderFromDelivery,
+    // Delivery functions
+    getMyDeliveries,
     // Inventory monitoring
     getLowStockProducts
 };

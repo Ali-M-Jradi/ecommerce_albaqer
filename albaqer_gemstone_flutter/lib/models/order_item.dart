@@ -5,6 +5,10 @@ class OrderItem {
   final int productId;
   final int quantity;
   final double priceAtPurchase;
+  // Product details (from JOIN query)
+  final String? productName;
+  final String? productDescription;
+  final String? productImage;
 
   OrderItem({
     this.id,
@@ -12,6 +16,9 @@ class OrderItem {
     required this.productId,
     required this.quantity,
     required this.priceAtPurchase,
+    this.productName,
+    this.productDescription,
+    this.productImage,
   });
 
   /// Convert to JSON for API requests
@@ -30,7 +37,10 @@ class OrderItem {
       orderId: json['order_id'],
       productId: json['product_id'],
       quantity: json['quantity'],
-      priceAtPurchase: json['price_at_purchase']?.toDouble() ?? 0.0,
+      priceAtPurchase: double.tryParse(json['price_at_purchase'].toString()) ?? 0.0,
+      productName: json['product_name'],
+      productDescription: json['product_description'],
+      productImage: json['product_image'],
     );
   }
 }

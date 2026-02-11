@@ -45,8 +45,23 @@ const getAddressById = async (req, res) => {
 
         const address = result.rows[0];
 
-        // Check if user owns this address or is admin
-        if (address.user_id !== req.user.id && req.user.role !== 'admin') {
+        // Check if user owns this address, is admin, or is delivery person with assigned order
+        let isAuthorized = address.user_id === req.user.id || 
+                          req.user.role === 'admin' ||
+                          req.user.role === 'manager';
+
+        // Additional check for delivery_man: allow if they have an order assigned with this address
+        if (!isAuthorized && req.user.role === 'delivery_man') {
+            const orderCheck = await pool.query(
+                `SELECT id FROM orders 
+                 WHERE delivery_man_id = $1 
+                 AND (shipping_address_id = $2 OR billing_address_id = $2)`,
+                [req.user.id, id]
+            );
+            isAuthorized = orderCheck.rowCount > 0;
+        }
+
+        if (!isAuthorized) {
             return res.status(403).json({
                 success: false,
                 message: 'Not authorized to view this address'

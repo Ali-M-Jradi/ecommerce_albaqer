@@ -16,6 +16,11 @@ A complete full-stack e-commerce solution for Islamic gemstone jewelry with AI-p
 - **Product Catalog** - Rings, necklaces, bracelets with Islamic significance
 - **Order Management** - Complete shopping cart and checkout flow
 - **User Accounts** - Authentication and profile management
+- **Multi-Role System** - 4 user roles with complete workflows:
+  - 👤 **Customer** - Browse, order, track deliveries
+  - 👨‍💼 **Admin** - Manage products, confirm orders, full control
+  - 📋 **Manager** - Assign orders to delivery personnel
+  - 🚚 **Delivery Man** - View assignments, contact customers, update delivery status
 
 ---
 
@@ -233,6 +238,9 @@ Each project has its own documentation:
 - `POST /api/auth/login` - User login
 - `GET /api/products` - List products
 - `POST /api/orders` - Create order
+- `GET /api/orders/delivery/my-deliveries` - Get delivery person's assigned orders
+- `GET /api/orders/:id/items` - Get order items with product details
+- `PUT /api/orders/:id/status` - Update order status
 
 ### Chatbot API (Port 8000) ✨ NEW
 - `GET /api/health` - Health check
@@ -275,6 +283,18 @@ GEMINI_API_KEY=your_key_here
 - Chat history tracking per user
 - Real-time intelligent routing
 
+### � Delivery Role Complete (P1-6)
+- Complete delivery workflow implementation
+- **Dashboard**: Order statistics (assigned, in transit, delivered)
+- **My Deliveries**: List of orders assigned to delivery person
+- **Order Details**: 
+  - Customer contact with tap-to-call and SMS
+  - Shipping address with Google Maps integration
+  - Order items with product details and images
+  - Status update buttons (Start Delivery, Mark Delivered)
+- **Security**: Entity-level authorization (delivery persons only see their orders)
+- **Status Workflow**: Validates status transitions (prevents backwards changes)
+
 ### 📱 Flutter Chat Screen
 - Beautiful chat UI with message bubbles
 - Connection status monitoring
@@ -286,6 +306,8 @@ GEMINI_API_KEY=your_key_here
 - Separate `docs/` folders for each project
 - Clear README files with quick start guides
 - Comprehensive setup instructions
+- [DELIVERY_ROLE_GUIDE.md](docs/DELIVERY_ROLE_GUIDE.md) - Complete delivery setup guide
+- [P1-6_DELIVERY_ROLE_SUMMARY.md](docs/P1-6_DELIVERY_ROLE_SUMMARY.md) - Implementation summary
 
 ---
 

@@ -694,4 +694,126 @@ class OrderService {
       return false;
     }
   }
+
+  // ========================================================================
+  // DELIVERY-SPECIFIC METHODS
+  // ========================================================================
+
+  /// Get all orders assigned to the current delivery person
+  Future<List<Order>> getMyDeliveries() async {
+    try {
+      final token = await _getToken();
+      if (token == null) {
+        print('❌ No auth token found');
+        return [];
+      }
+
+      final baseUrl = ApiConfig.baseUrl;
+      final response = await http.get(
+        Uri.parse('$baseUrl/orders/delivery/my-deliveries'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success'] == true && data['data'] != null) {
+          final List<dynamic> ordersJson = data['data'];
+          return ordersJson.map((json) => Order.fromJson(json)).toList();
+        }
+      }
+      print('❌ Failed to fetch my deliveries: ${response.statusCode}');
+      return [];
+    } catch (e) {
+      print('❌ Error fetching my deliveries: $e');
+      return [];
+    }
+  }
+
+  /// Update order status (Delivery man can update to in_transit or delivered)
+  Future<bool> updateDeliveryStatus(int orderId, String newStatus) async {
+    try {
+      final token = await _getToken();
+      if (token == null) {
+        print('❌ No auth token found');
+        return false;
+      }
+
+      // Validate status
+      final validStatuses = ['assigned', 'in_transit', 'delivered'];
+      if (!validStatuses.contains(newStatus)) {
+        print('❌ Invalid status: $newStatus');
+        return false;
+      }
+
+      final baseUrl = ApiConfig.baseUrl;
+      final response = await http.put(
+        Uri.parse('$baseUrl/orders/$orderId/status'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode({'status': newStatus}),
+      );
+
+      if (response.statusCode == 200) {
+        print('✅ Order status updated to $newStatus');
+        return true;
+      } else {
+        print('❌ Failed to update order status: ${response.statusCode}');
+        print('Response: ${response.body}');
+        return false;
+      }
+    } catch (e) {
+      print('❌ Error updating order status: $e');
+      return false;
+    }
+  }
+
+  /// Get order items for a specific order
+  /// Used by delivery persons and customers to see what's in the order
+  Future<List<OrderItem>> getOrderItems(int orderId) async {
+    try {
+      final token = await _getToken();
+      if (token == null) {
+        print('❌ No auth token found');
+        throw Exception('Not authenticated. Please login again.');
+      }
+
+      final baseUrl = ApiConfig.baseUrl;
+      final response = await http.get(
+        Uri.parse('$baseUrl/orders/$orderId/items'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      print('📡 Get order items response: ${response.statusCode}');
+      
+      if (response.statusCode == 200) {
+        final json = jsonDecode(response.body);
+        final List<dynamic> data = json['data'];
+        print('✅ Fetched ${data.length} order items');
+        return data.map((item) => OrderItem.fromJson(item)).toList();
+      } else if (response.statusCode == 403) {
+        final json = jsonDecode(response.body);
+        print('❌ Not authorized: ${json['message']}');
+        throw Exception('Not authorized to view order items');
+      } else if (response.statusCode == 404) {
+        print('❌ Order not found');
+        throw Exception('Order not found');
+      } else {
+        print('❌ Failed to fetch order items: ${response.statusCode}');
+        print('Response: ${response.body}');
+        final json = jsonDecode(response.body);
+        throw Exception(json['message'] ?? 'Failed to fetch order items');
+      }
+    } catch (e) {
+      print('❌ Error fetching order items: $e');
+      rethrow;
+    }
+  }
 }
